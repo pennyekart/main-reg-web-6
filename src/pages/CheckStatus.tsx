@@ -39,7 +39,7 @@ const CheckStatus = () => {
         .from('registrations')
         .select(`
           *,
-          categories (
+          categories!registrations_category_id_fkey (
             name_english,
             name_malayalam
           )
