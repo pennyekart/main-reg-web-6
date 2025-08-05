@@ -2,7 +2,14 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import RegistrationsTab from '@/components/admin/RegistrationsTab';
+import CategoriesTab from '@/components/admin/CategoriesTab';
+import PanchayathsTab from '@/components/admin/PanchayathsTab';
+import AnnouncementsTab from '@/components/admin/AnnouncementsTab';
+import UtilitiesTab from '@/components/admin/UtilitiesTab';
+import AccountsTab from '@/components/admin/AccountsTab';
+import ReportsTab from '@/components/admin/ReportsTab';
 
 const AdminPanel = () => {
   const { isAdminLoggedIn, logout } = useAdminAuth();
@@ -33,61 +40,45 @@ const AdminPanel = () => {
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Registrations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Manage user registrations</p>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="registrations" className="w-full">
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="registrations">Registrations</TabsTrigger>
+            <TabsTrigger value="categories">Categories</TabsTrigger>
+            <TabsTrigger value="panchayaths">Panchayaths</TabsTrigger>
+            <TabsTrigger value="announcements">Announcements</TabsTrigger>
+            <TabsTrigger value="utilities">Utilities</TabsTrigger>
+            <TabsTrigger value="accounts">Accounts</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+          </TabsList>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Categories</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Manage registration categories</p>
-            </CardContent>
-          </Card>
+          <TabsContent value="registrations">
+            <RegistrationsTab />
+          </TabsContent>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Panchayaths</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Manage panchayath list</p>
-            </CardContent>
-          </Card>
+          <TabsContent value="categories">
+            <CategoriesTab />
+          </TabsContent>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Announcements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Manage announcements</p>
-            </CardContent>
-          </Card>
+          <TabsContent value="panchayaths">
+            <PanchayathsTab />
+          </TabsContent>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Utilities</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Manage utility links</p>
-            </CardContent>
-          </Card>
+          <TabsContent value="announcements">
+            <AnnouncementsTab />
+          </TabsContent>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Reports</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">View reports and analytics</p>
-            </CardContent>
-          </Card>
-        </div>
+          <TabsContent value="utilities">
+            <UtilitiesTab />
+          </TabsContent>
+          
+          <TabsContent value="accounts">
+            <AccountsTab />
+          </TabsContent>
+          
+          <TabsContent value="reports">
+            <ReportsTab />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

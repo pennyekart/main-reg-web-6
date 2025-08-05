@@ -1,0 +1,335 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+
+interface Category {
+  id: string;
+  name_english: string;
+  name_malayalam: string;
+  description: string;
+  actual_fee: number;
+  offer_fee: number;
+  expiry_days: number;
+  is_active: boolean;
+}
+
+const CategoriesTab = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [formData, setFormData] = useState({
+    name_english: '',
+    name_malayalam: '',
+    description: '',
+    actual_fee: 0,
+    offer_fee: 0,
+    expiry_days: 30
+  });
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast.error('Error fetching categories');
+      } else {
+        setCategories(data || []);
+      }
+    } catch (error) {
+      toast.error('Error fetching categories');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name_english: '',
+      name_malayalam: '',
+      description: '',
+      actual_fee: 0,
+      offer_fee: 0,
+      expiry_days: 30
+    });
+    setEditingCategory(null);
+  };
+
+  const handleAddNew = () => {
+    resetForm();
+    setShowDialog(true);
+  };
+
+  const handleEdit = (category: Category) => {
+    setFormData({
+      name_english: category.name_english,
+      name_malayalam: category.name_malayalam,
+      description: category.description || '',
+      actual_fee: category.actual_fee,
+      offer_fee: category.offer_fee,
+      expiry_days: category.expiry_days
+    });
+    setEditingCategory(category);
+    setShowDialog(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name_english || !formData.name_malayalam) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      if (editingCategory) {
+        const { error } = await supabase
+          .from('categories')
+          .update(formData)
+          .eq('id', editingCategory.id);
+
+        if (error) {
+          toast.error('Error updating category');
+        } else {
+          toast.success('Category updated successfully');
+          setShowDialog(false);
+          fetchCategories();
+          resetForm();
+        }
+      } else {
+        const { error } = await supabase
+          .from('categories')
+          .insert(formData);
+
+        if (error) {
+          toast.error('Error creating category');
+        } else {
+          toast.success('Category created successfully');
+          setShowDialog(false);
+          fetchCategories();
+          resetForm();
+        }
+      }
+    } catch (error) {
+      toast.error('Error saving category');
+    }
+  };
+
+  const toggleCategoryStatus = async (category: Category) => {
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .update({ is_active: !category.is_active })
+        .eq('id', category.id);
+
+      if (error) {
+        toast.error('Error updating category status');
+      } else {
+        toast.success('Category status updated');
+        fetchCategories();
+      }
+    } catch (error) {
+      toast.error('Error updating category status');
+    }
+  };
+
+  const deleteCategory = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this category?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        toast.error('Error deleting category');
+      } else {
+        toast.success('Category deleted successfully');
+        fetchCategories();
+      }
+    } catch (error) {
+      toast.error('Error deleting category');
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle>Categories Management</CardTitle>
+          <Dialog open={showDialog} onOpenChange={setShowDialog}>
+            <DialogTrigger asChild>
+              <Button onClick={handleAddNew}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Category
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingCategory ? 'Edit Category' : 'Add New Category'}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name_english">English Name *</Label>
+                  <Input
+                    id="name_english"
+                    value={formData.name_english}
+                    onChange={(e) => setFormData({ ...formData, name_english: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="name_malayalam">Malayalam Name *</Label>
+                  <Input
+                    id="name_malayalam"
+                    value={formData.name_malayalam}
+                    onChange={(e) => setFormData({ ...formData, name_malayalam: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="actual_fee">Actual Fee (₹)</Label>
+                    <Input
+                      id="actual_fee"
+                      type="number"
+                      min="0"
+                      value={formData.actual_fee}
+                      onChange={(e) => setFormData({ ...formData, actual_fee: parseFloat(e.target.value) || 0 })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="offer_fee">Offer Fee (₹)</Label>
+                    <Input
+                      id="offer_fee"
+                      type="number"
+                      min="0"
+                      value={formData.offer_fee}
+                      onChange={(e) => setFormData({ ...formData, offer_fee: parseFloat(e.target.value) || 0 })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="expiry_days">Pending Registration Expiry (Days)</Label>
+                  <Input
+                    id="expiry_days"
+                    type="number"
+                    min="1"
+                    value={formData.expiry_days}
+                    onChange={(e) => setFormData({ ...formData, expiry_days: parseInt(e.target.value) || 30 })}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1">
+                    {editingCategory ? 'Update' : 'Create'}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      
+      <CardContent>
+        {loading ? (
+          <div className="text-center py-8">Loading...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>English Name</TableHead>
+                  <TableHead>Malayalam Name</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Actual Fee</TableHead>
+                  <TableHead>Offer Fee</TableHead>
+                  <TableHead>Expiry Days</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {categories.map((category) => (
+                  <TableRow key={category.id}>
+                    <TableCell className="font-medium">{category.name_english}</TableCell>
+                    <TableCell>{category.name_malayalam}</TableCell>
+                    <TableCell>{category.description || '-'}</TableCell>
+                    <TableCell>₹{category.actual_fee}</TableCell>
+                    <TableCell>₹{category.offer_fee}</TableCell>
+                    <TableCell>{category.expiry_days} days</TableCell>
+                    <TableCell>
+                      <Badge 
+                        className={category.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                        onClick={() => toggleCategoryStatus(category)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {category.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(category)}
+                        >
+                          <Edit className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => deleteCategory(category.id)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default CategoriesTab;
