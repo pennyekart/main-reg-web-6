@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, FileDown, Edit, Trash2, Check, X, Calendar } from 'lucide-react';
+import { Search, FileDown, Edit, Trash2, Check, X, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import EditRegistrationDialog from './EditRegistrationDialog';
 
 interface Registration {
   id: string;
@@ -24,6 +25,9 @@ interface Registration {
   approved_date: string;
   approved_by: string;
   expiry_date: string;
+  category_id: string;
+  preference_category_id?: string;
+  panchayath_id?: string;
   categories: {
     name_english: string;
     name_malayalam: string;
@@ -47,6 +51,8 @@ const RegistrationsTab = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [panchayathFilter, setPanchayathFilter] = useState('all');
+  const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     fetchRegistrations();
@@ -146,6 +152,41 @@ const RegistrationsTab = () => {
     } catch (error) {
       toast.error('Error deleting registration');
     }
+  };
+
+  const restoreRegistration = async (id: string) => {
+    if (!confirm('Are you sure you want to restore this registration to pending status?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('registrations')
+        .update({ 
+          status: 'pending',
+          approved_date: null,
+          approved_by: null
+        })
+        .eq('id', id);
+
+      if (error) {
+        toast.error('Error restoring registration');
+      } else {
+        toast.success('Registration restored to pending status');
+        fetchRegistrations();
+      }
+    } catch (error) {
+      toast.error('Error restoring registration');
+    }
+  };
+
+  const handleEditRegistration = (registration: Registration) => {
+    setEditingRegistration(registration);
+    setShowEditDialog(true);
+  };
+
+  const handleEditSuccess = () => {
+    fetchRegistrations();
+    setShowEditDialog(false);
+    setEditingRegistration(null);
   };
 
   const getStatusBadgeColor = (status: string) => {
@@ -299,12 +340,22 @@ const RegistrationsTab = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditRegistration(reg)}
+                          title="Edit Registration"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </Button>
+                        
                         {reg.status === 'pending' && (
                           <>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => updateRegistrationStatus(reg.id, 'approved')}
+                              title="Approve"
                             >
                               <Check className="w-3 h-3" />
                             </Button>
@@ -312,15 +363,29 @@ const RegistrationsTab = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => updateRegistrationStatus(reg.id, 'rejected')}
+                              title="Reject"
                             >
                               <X className="w-3 h-3" />
                             </Button>
                           </>
                         )}
+                        
+                        {(reg.status === 'approved' || reg.status === 'rejected') && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => restoreRegistration(reg.id)}
+                            title="Restore to Pending"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                          </Button>
+                        )}
+                        
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => deleteRegistration(reg.id)}
+                          title="Delete"
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>
@@ -333,6 +398,16 @@ const RegistrationsTab = () => {
           </div>
         )}
       </CardContent>
+
+      <EditRegistrationDialog
+        registration={editingRegistration}
+        isOpen={showEditDialog}
+        onClose={() => {
+          setShowEditDialog(false);
+          setEditingRegistration(null);
+        }}
+        onSuccess={handleEditSuccess}
+      />
     </Card>
   );
 };
