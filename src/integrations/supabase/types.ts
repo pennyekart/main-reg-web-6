@@ -14,13 +14,220 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      announcements: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          actual_fee: number | null
+          created_at: string
+          description: string | null
+          expiry_days: number | null
+          id: string
+          is_active: boolean | null
+          name_english: string
+          name_malayalam: string
+          offer_fee: number | null
+          updated_at: string
+        }
+        Insert: {
+          actual_fee?: number | null
+          created_at?: string
+          description?: string | null
+          expiry_days?: number | null
+          id?: string
+          is_active?: boolean | null
+          name_english: string
+          name_malayalam: string
+          offer_fee?: number | null
+          updated_at?: string
+        }
+        Update: {
+          actual_fee?: number | null
+          created_at?: string
+          description?: string | null
+          expiry_days?: number | null
+          id?: string
+          is_active?: boolean | null
+          name_english?: string
+          name_malayalam?: string
+          offer_fee?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      panchayaths: {
+        Row: {
+          created_at: string
+          district: string
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          district: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          district?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      registrations: {
+        Row: {
+          address: string
+          agent: string | null
+          approved_by: string | null
+          approved_date: string | null
+          category_id: string
+          created_at: string
+          customer_id: string
+          expiry_date: string | null
+          fee: number | null
+          full_name: string
+          id: string
+          mobile_number: string
+          panchayath_id: string | null
+          preference_category_id: string | null
+          status: string
+          updated_at: string
+          ward: string
+        }
+        Insert: {
+          address: string
+          agent?: string | null
+          approved_by?: string | null
+          approved_date?: string | null
+          category_id: string
+          created_at?: string
+          customer_id: string
+          expiry_date?: string | null
+          fee?: number | null
+          full_name: string
+          id?: string
+          mobile_number: string
+          panchayath_id?: string | null
+          preference_category_id?: string | null
+          status?: string
+          updated_at?: string
+          ward: string
+        }
+        Update: {
+          address?: string
+          agent?: string | null
+          approved_by?: string | null
+          approved_date?: string | null
+          category_id?: string
+          created_at?: string
+          customer_id?: string
+          expiry_date?: string | null
+          fee?: number | null
+          full_name?: string
+          id?: string
+          mobile_number?: string
+          panchayath_id?: string | null
+          preference_category_id?: string | null
+          status?: string
+          updated_at?: string
+          ward?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registrations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registrations_panchayath_id_fkey"
+            columns: ["panchayath_id"]
+            isOneToOne: false
+            referencedRelation: "panchayaths"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registrations_preference_category_id_fkey"
+            columns: ["preference_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      utilities: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_customer_id: {
+        Args: { mobile: string; name: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
