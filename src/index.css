@@ -55,12 +55,12 @@ All colors MUST be HSL.
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Category colors - vibrant and exciting */
-    --category-blue: 220 100% 92%;
-    --category-blue-foreground: 220 91% 25%;
-    --category-green: 145 85% 90%;
-    --category-green-foreground: 145 85% 25%;
-    --category-purple: 280 100% 92%;
-    --category-purple-foreground: 280 91% 30%;
+    --category-blue: 200 100% 88%;
+    --category-blue-foreground: 200 100% 20%;
+    --category-green: 160 90% 88%;
+    --category-green-foreground: 160 90% 18%;
+    --category-purple: 300 95% 90%;
+    --category-purple-foreground: 300 95% 22%;
     --category-orange: 25 100% 90%;
     --category-orange-foreground: 25 91% 28%;
     --category-pink: 340 100% 92%;
@@ -107,12 +107,12 @@ All colors MUST be HSL.
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Category colors - dark mode - vibrant and exciting */
-    --category-blue: 220 70% 20%;
-    --category-blue-foreground: 220 100% 80%;
-    --category-green: 145 60% 18%;
-    --category-green-foreground: 145 85% 75%;
-    --category-purple: 280 70% 22%;
-    --category-purple-foreground: 280 100% 82%;
+    --category-blue: 200 85% 15%;
+    --category-blue-foreground: 200 100% 85%;
+    --category-green: 160 70% 15%;
+    --category-green-foreground: 160 90% 80%;
+    --category-purple: 300 80% 18%;
+    --category-purple-foreground: 300 95% 85%;
     --category-orange: 25 80% 20%;
     --category-orange-foreground: 25 100% 80%;
     --category-pink: 340 70% 22%;
