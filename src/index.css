@@ -54,19 +54,19 @@ All colors MUST be HSL.
 
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Category colors */
-    --category-blue: 210 100% 95%;
-    --category-blue-foreground: 210 100% 15%;
-    --category-green: 120 60% 95%;
-    --category-green-foreground: 120 60% 20%;
-    --category-purple: 270 100% 95%;
-    --category-purple-foreground: 270 100% 25%;
-    --category-orange: 30 100% 95%;
-    --category-orange-foreground: 30 100% 25%;
-    --category-pink: 330 100% 95%;
-    --category-pink-foreground: 330 100% 25%;
-    --category-indigo: 240 100% 95%;
-    --category-indigo-foreground: 240 100% 25%;
+    /* Category colors - vibrant and exciting */
+    --category-blue: 220 100% 92%;
+    --category-blue-foreground: 220 91% 25%;
+    --category-green: 145 85% 90%;
+    --category-green-foreground: 145 85% 25%;
+    --category-purple: 280 100% 92%;
+    --category-purple-foreground: 280 91% 30%;
+    --category-orange: 25 100% 90%;
+    --category-orange-foreground: 25 91% 28%;
+    --category-pink: 340 100% 92%;
+    --category-pink-foreground: 340 91% 30%;
+    --category-indigo: 250 100% 92%;
+    --category-indigo-foreground: 250 91% 28%;
   }
 
   .dark {
@@ -106,19 +106,19 @@ All colors MUST be HSL.
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Category colors - dark mode */
-    --category-blue: 210 50% 15%;
-    --category-blue-foreground: 210 100% 85%;
-    --category-green: 120 30% 15%;
-    --category-green-foreground: 120 60% 80%;
-    --category-purple: 270 50% 15%;
-    --category-purple-foreground: 270 100% 85%;
-    --category-orange: 30 50% 15%;
-    --category-orange-foreground: 30 100% 85%;
-    --category-pink: 330 50% 15%;
-    --category-pink-foreground: 330 100% 85%;
-    --category-indigo: 240 50% 15%;
-    --category-indigo-foreground: 240 100% 85%;
+    /* Category colors - dark mode - vibrant and exciting */
+    --category-blue: 220 70% 20%;
+    --category-blue-foreground: 220 100% 80%;
+    --category-green: 145 60% 18%;
+    --category-green-foreground: 145 85% 75%;
+    --category-purple: 280 70% 22%;
+    --category-purple-foreground: 280 100% 82%;
+    --category-orange: 25 80% 20%;
+    --category-orange-foreground: 25 100% 80%;
+    --category-pink: 340 70% 22%;
+    --category-pink-foreground: 340 100% 82%;
+    --category-indigo: 250 70% 20%;
+    --category-indigo-foreground: 250 100% 80%;
   }
 }
 
