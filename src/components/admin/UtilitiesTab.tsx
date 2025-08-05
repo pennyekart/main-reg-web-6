@@ -179,12 +179,15 @@ const UtilitiesTab = () => {
                 Add Utility
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md" aria-describedby="utility-form-description">
               <DialogHeader>
                 <DialogTitle>
                   {editingUtility ? 'Edit Utility' : 'Add New Utility'}
                 </DialogTitle>
               </DialogHeader>
+              <div id="utility-form-description" className="sr-only">
+                Form to {editingUtility ? 'edit an existing' : 'add a new'} utility with name, URL, and description.
+              </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name *</Label>

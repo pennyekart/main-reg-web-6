@@ -166,12 +166,15 @@ const PanchayathsTab = () => {
                 Add Panchayath
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md" aria-describedby="panchayath-form-description">
               <DialogHeader>
                 <DialogTitle>
                   {editingPanchayath ? 'Edit Panchayath' : 'Add New Panchayath'}
                 </DialogTitle>
               </DialogHeader>
+              <div id="panchayath-form-description" className="sr-only">
+                Form to {editingPanchayath ? 'edit an existing' : 'add a new'} panchayath with name and district information.
+              </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Panchayath Name *</Label>

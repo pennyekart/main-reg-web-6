@@ -168,12 +168,15 @@ const AnnouncementsTab = () => {
                 Add Announcement
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md" aria-describedby="announcement-form-description">
               <DialogHeader>
                 <DialogTitle>
                   {editingAnnouncement ? 'Edit Announcement' : 'Add New Announcement'}
                 </DialogTitle>
               </DialogHeader>
+              <div id="announcement-form-description" className="sr-only">
+                Form to {editingAnnouncement ? 'edit an existing' : 'add a new'} announcement with title and content.
+              </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="title">Title *</Label>
