@@ -61,6 +61,20 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				category: {
+					blue: 'hsl(var(--category-blue))',
+					'blue-foreground': 'hsl(var(--category-blue-foreground))',
+					green: 'hsl(var(--category-green))',
+					'green-foreground': 'hsl(var(--category-green-foreground))',
+					purple: 'hsl(var(--category-purple))',
+					'purple-foreground': 'hsl(var(--category-purple-foreground))',
+					orange: 'hsl(var(--category-orange))',
+					'orange-foreground': 'hsl(var(--category-orange-foreground))',
+					pink: 'hsl(var(--category-pink))',
+					'pink-foreground': 'hsl(var(--category-pink-foreground))',
+					indigo: 'hsl(var(--category-indigo))',
+					'indigo-foreground': 'hsl(var(--category-indigo-foreground))'
 				}
 			},
 			borderRadius: {

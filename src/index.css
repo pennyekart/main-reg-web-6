@@ -53,6 +53,20 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Category colors */
+    --category-blue: 210 100% 95%;
+    --category-blue-foreground: 210 100% 15%;
+    --category-green: 120 60% 95%;
+    --category-green-foreground: 120 60% 20%;
+    --category-purple: 270 100% 95%;
+    --category-purple-foreground: 270 100% 25%;
+    --category-orange: 30 100% 95%;
+    --category-orange-foreground: 30 100% 25%;
+    --category-pink: 330 100% 95%;
+    --category-pink-foreground: 330 100% 25%;
+    --category-indigo: 240 100% 95%;
+    --category-indigo-foreground: 240 100% 25%;
   }
 
   .dark {
@@ -91,6 +105,20 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Category colors - dark mode */
+    --category-blue: 210 50% 15%;
+    --category-blue-foreground: 210 100% 85%;
+    --category-green: 120 30% 15%;
+    --category-green-foreground: 120 60% 80%;
+    --category-purple: 270 50% 15%;
+    --category-purple-foreground: 270 100% 85%;
+    --category-orange: 30 50% 15%;
+    --category-orange-foreground: 30 100% 85%;
+    --category-pink: 330 50% 15%;
+    --category-pink-foreground: 330 100% 85%;
+    --category-indigo: 240 50% 15%;
+    --category-indigo-foreground: 240 100% 85%;
   }
 }
 

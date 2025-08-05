@@ -11,6 +11,14 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+const categoryColors = [
+  'blue', 'green', 'purple', 'orange', 'pink', 'indigo'
+];
+
+const getCategoryColor = (index: number) => {
+  return categoryColors[index % categoryColors.length];
+};
+
 interface Category {
   id: string;
   name_english: string;
@@ -271,60 +279,77 @@ const CategoriesTab = () => {
         {loading ? (
           <div className="text-center py-8">Loading...</div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>English Name</TableHead>
-                  <TableHead>Malayalam Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Actual Fee</TableHead>
-                  <TableHead>Offer Fee</TableHead>
-                  <TableHead>Expiry Days</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {categories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell className="font-medium">{category.name_english}</TableCell>
-                    <TableCell>{category.name_malayalam}</TableCell>
-                    <TableCell>{category.description || '-'}</TableCell>
-                    <TableCell>₹{category.actual_fee}</TableCell>
-                    <TableCell>₹{category.offer_fee}</TableCell>
-                    <TableCell>{category.expiry_days} days</TableCell>
-                    <TableCell>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.map((category, index) => {
+              const colorVariant = getCategoryColor(index);
+              return (
+                <Card key={category.id} className={`bg-category-${colorVariant} border-category-${colorVariant}-foreground/20`}>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <h3 className={`font-semibold text-category-${colorVariant}-foreground mb-1`}>
+                          {category.name_english}
+                        </h3>
+                        <p className={`text-sm text-category-${colorVariant}-foreground/80`}>
+                          {category.name_malayalam}
+                        </p>
+                      </div>
                       <Badge 
-                        className={category.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                        className={`${category.is_active 
+                          ? 'bg-green-500/20 text-green-700 border-green-500/30' 
+                          : 'bg-red-500/20 text-red-700 border-red-500/30'
+                        } cursor-pointer`}
                         onClick={() => toggleCategoryStatus(category)}
-                        style={{ cursor: 'pointer' }}
                       >
                         {category.is_active ? 'Active' : 'Inactive'}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(category)}
-                        >
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => deleteCategory(category.id)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
+                    </div>
+                    
+                    {category.description && (
+                      <p className={`text-sm text-category-${colorVariant}-foreground/70 mb-3 line-clamp-2`}>
+                        {category.description}
+                      </p>
+                    )}
+                    
+                    <div className="flex justify-between items-center mb-3">
+                      <div>
+                        <div className={`text-sm font-medium text-category-${colorVariant}-foreground`}>
+                          ₹{category.offer_fee}
+                        </div>
+                        {category.actual_fee !== category.offer_fee && (
+                          <div className={`text-xs text-category-${colorVariant}-foreground/60 line-through`}>
+                            ₹{category.actual_fee}
+                          </div>
+                        )}
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      <div className={`text-sm text-category-${colorVariant}-foreground/80`}>
+                        {category.expiry_days} days
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEdit(category)}
+                        className={`flex-1 border-category-${colorVariant}-foreground/30 text-category-${colorVariant}-foreground hover:bg-category-${colorVariant}-foreground/10`}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => deleteCategory(category.id)}
+                        className="border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </CardContent>
