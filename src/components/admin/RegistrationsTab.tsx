@@ -61,18 +61,21 @@ const RegistrationsTab = () => {
         .from('registrations')
         .select(`
           *,
-          categories (name_english, name_malayalam),
-          preference_categories:preference_category_id (name_english, name_malayalam),
+          categories!registrations_category_id_fkey (name_english, name_malayalam),
+          preference_categories:categories!registrations_preference_category_id_fkey (name_english, name_malayalam),
           panchayaths (name, district)
         `)
         .order('created_at', { ascending: false });
 
       if (error) {
+        console.error('Error fetching registrations:', error);
         toast.error('Error fetching registrations');
       } else {
+        console.log('Fetched registrations:', data);
         setRegistrations(data as unknown as Registration[] || []);
       }
     } catch (error) {
+      console.error('Error fetching registrations:', error);
       toast.error('Error fetching registrations');
     } finally {
       setLoading(false);
