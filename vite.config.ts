@@ -8,8 +8,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    strictPort: true,
     hmr: {
-      port: 8080,
+      clientPort: 8080,
     },
   },
   plugins: [
@@ -21,5 +22,8 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  define: {
+    __WS_TOKEN__: JSON.stringify(""),
   },
 }));
