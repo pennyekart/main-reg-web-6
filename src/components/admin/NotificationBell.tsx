@@ -18,10 +18,11 @@ interface ExpiringRegistration {
 }
 
 const NotificationBell = () => {
-  const [expiringRegistrations, setExpiringRegistrations] = useState<ExpiringRegistration[]>([]);
-  const [showAlert, setShowAlert] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+const [expiringRegistrations, setExpiringRegistrations] = useState<ExpiringRegistration[]>([]);
+const [showAlert, setShowAlert] = useState(false);
+const [loading, setLoading] = useState(false);
+const [acknowledged, setAcknowledged] = useState(false);
+const { toast } = useToast();
 
   const fetchExpiringRegistrations = async () => {
     try {
@@ -113,17 +114,17 @@ const NotificationBell = () => {
     };
   }, []);
 
-  // Show alert automatically when expiring registrations are found
-  useEffect(() => {
-    if (expiringRegistrations.length > 0) {
-      // Auto-show alert after 2 seconds on load
-      const timer = setTimeout(() => {
-        setShowAlert(true);
-      }, 2000);
+// Show alert automatically when expiring registrations are found
+useEffect(() => {
+  if (expiringRegistrations.length > 0 && !acknowledged) {
+    // Auto-show alert after 2 seconds on load
+    const timer = setTimeout(() => {
+      setShowAlert(true);
+    }, 2000);
 
-      return () => clearTimeout(timer);
-    }
-  }, [expiringRegistrations.length]);
+    return () => clearTimeout(timer);
+  }
+}, [expiringRegistrations.length, acknowledged]);
 
   const handleBellClick = () => {
     if (expiringRegistrations.length > 0) {
@@ -153,11 +154,12 @@ const NotificationBell = () => {
         </Button>
       </div>
 
-      <ExpiringRegistrationsAlert
-        open={showAlert}
-        onOpenChange={setShowAlert}
-        registrations={expiringRegistrations}
-      />
+<ExpiringRegistrationsAlert
+  open={showAlert}
+  onOpenChange={setShowAlert}
+  registrations={expiringRegistrations}
+  onGotIt={() => setAcknowledged(true)}
+/>
     </>
   );
 };

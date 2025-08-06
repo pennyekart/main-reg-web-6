@@ -20,12 +20,14 @@ interface ExpiringRegistrationsAlertProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   registrations: ExpiringRegistration[];
+  onGotIt?: () => void;
 }
 
 const ExpiringRegistrationsAlert = ({
   open,
   onOpenChange,
-  registrations
+  registrations,
+  onGotIt,
 }: ExpiringRegistrationsAlertProps) => {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -105,9 +107,10 @@ const ExpiringRegistrationsAlert = ({
     }
   };
 
-  const handleGotIt = () => {
-    onOpenChange(false);
-  };
+const handleGotIt = () => {
+  onOpenChange(false);
+  onGotIt?.();
+};
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
