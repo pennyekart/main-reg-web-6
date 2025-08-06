@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Download, FileText, Users, Building, DollarSign, TrendingUp, ChevronRight, Check, RotateCcw } from 'lucide-react';
+import { CalendarIcon, Download, FileText, Users, Building, DollarSign, TrendingUp, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -30,9 +30,6 @@ interface Registration {
   category_id: string;
   preference_category_id?: string;
   panchayath_id?: string;
-  payment_verified?: boolean;
-  verified_by?: string;
-  verified_at?: string;
   categories: {
     name_english: string;
     name_malayalam: string;
@@ -50,7 +47,7 @@ interface Registration {
 const ReportsTab = () => {
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
-  const [hideVerification, setHideVerification] = useState(false);
+  
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [pendingRegistrations, setPendingRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,8 +110,8 @@ const ReportsTab = () => {
 
   // Filter registrations by date range
   const filteredRegistrations = registrations.filter(registration => {
-    // If no dates are selected, return empty array
-    if (!fromDate && !toDate) return false;
+    // If no dates are selected, return all registrations
+    if (!fromDate && !toDate) return true;
     
     const registrationDate = registration.approved_date ? new Date(registration.approved_date) : null;
     if (!registrationDate) return false;
@@ -143,7 +140,6 @@ const ReportsTab = () => {
   const handleClear = () => {
     setFromDate(undefined);
     setToDate(undefined);
-    setHideVerification(false);
   };
 
   const handleExportExcel = () => {
@@ -158,53 +154,6 @@ const ReportsTab = () => {
     toast.success('Export PDF functionality to be implemented');
   };
 
-  const handleVerify = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('registrations')
-        .update({ 
-          payment_verified: true,
-          verified_by: 'Admin',
-          verified_at: new Date().toISOString()
-        } as any)
-        .eq('id', id);
-
-      if (error) {
-        toast.error('Error verifying payment');
-        console.error('Error:', error);
-      } else {
-        toast.success('Payment verified successfully');
-        fetchRegistrations();
-      }
-    } catch (error) {
-      toast.error('Error verifying payment');
-      console.error('Error:', error);
-    }
-  };
-
-  const handleRestoreVerification = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('registrations')
-        .update({ 
-          payment_verified: null,
-          verified_by: null,
-          verified_at: null
-        } as any)
-        .eq('id', id);
-
-      if (error) {
-        toast.error('Error restoring verification');
-        console.error('Error:', error);
-      } else {
-        toast.success('Verification restored successfully');
-        fetchRegistrations();
-      }
-    } catch (error) {
-      toast.error('Error restoring verification');
-      console.error('Error:', error);
-    }
-  };
 
   if (loading) {
     return (
@@ -281,13 +230,6 @@ const ReportsTab = () => {
             </div>
 
             <div className="flex gap-2 ml-auto">
-              <Button 
-                variant={hideVerification ? "default" : "outline"}
-                onClick={() => setHideVerification(!hideVerification)}
-                className="bg-slate-800 text-white hover:bg-slate-700"
-              >
-                Hide Verification
-              </Button>
               <Button 
                 variant="destructive" 
                 onClick={handleClear}
@@ -459,8 +401,6 @@ const ReportsTab = () => {
                   <TableHead>Fee Paid</TableHead>
                   <TableHead>Approved By</TableHead>
                   <TableHead>Approved Date</TableHead>
-                  {!hideVerification && <TableHead>Verification Status</TableHead>}
-                  {!hideVerification && <TableHead>Verify</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -479,54 +419,6 @@ const ReportsTab = () => {
                         : 'N/A'
                       }
                     </TableCell>
-                    {!hideVerification && (
-                      <TableCell>
-                        {registration.payment_verified ? (
-                          <div className="flex flex-col gap-1">
-                            <Badge variant="default" className="bg-green-100 text-green-800">
-                              <Check className="w-3 h-3 mr-1" />
-                              Verified
-                            </Badge>
-                            <div className="text-xs text-muted-foreground">
-                              By: {registration.verified_by}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {registration.verified_at && format(new Date(registration.verified_at), 'dd/MM/yyyy HH:mm')}
-                            </div>
-                          </div>
-                        ) : (
-                          <Badge variant="outline" className="text-orange-600 border-orange-600">
-                            Pending
-                          </Badge>
-                        )}
-                      </TableCell>
-                    )}
-                    {!hideVerification && (
-                      <TableCell>
-                        <div className="flex gap-2">
-                          {!registration.payment_verified ? (
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleVerify(registration.id)}
-                              className="bg-blue-600 hover:bg-blue-700"
-                            >
-                              <Check className="w-4 h-4 mr-1" />
-                              Verify
-                            </Button>
-                          ) : (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => handleRestoreVerification(registration.id)}
-                              className="text-orange-600 border-orange-600 hover:bg-orange-50"
-                            >
-                              <RotateCcw className="w-4 h-4 mr-1" />
-                              Restore
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    )}
                   </TableRow>
                 ))}
               </TableBody>
