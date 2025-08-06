@@ -108,10 +108,13 @@ const ReportsTab = () => {
     }
   };
 
+  const isRangeInvalid = !!fromDate && !!toDate && fromDate > toDate;
+
   // Filter registrations by date range
   const filteredRegistrations = registrations.filter(registration => {
     // If no dates are selected, return all registrations
     if (!fromDate && !toDate) return true;
+    if (isRangeInvalid) return false;
     
     const registrationDate = registration.approved_date ? new Date(registration.approved_date) : null;
     if (!registrationDate) return false;
@@ -143,12 +146,28 @@ const ReportsTab = () => {
   };
 
   const handleExportExcel = () => {
+    if (!fromDate || !toDate) {
+      toast.error('Please select both From and To dates to export');
+      return;
+    }
+    if (isRangeInvalid) {
+      toast.error('Invalid date range: From date must be before or equal to To date');
+      return;
+    }
     // Export logic for Excel
     console.log('Exporting to Excel...', filteredRegistrations);
     toast.success('Export Excel functionality to be implemented');
   };
 
   const handleExportPDF = () => {
+    if (!fromDate || !toDate) {
+      toast.error('Please select both From and To dates to export');
+      return;
+    }
+    if (isRangeInvalid) {
+      toast.error('Invalid date range: From date must be before or equal to To date');
+      return;
+    }
     // Export logic for PDF
     console.log('Exporting to PDF...', filteredRegistrations);
     toast.success('Export PDF functionality to be implemented');
@@ -194,7 +213,14 @@ const ReportsTab = () => {
                   <Calendar
                     mode="single"
                     selected={fromDate}
-                    onSelect={setFromDate}
+                    onSelect={(date) => {
+                      if (date && toDate && date > toDate) {
+                        toast.error('From date cannot be after To date');
+                        return;
+                      }
+                      setFromDate(date);
+                    }}
+                    disabled={(date) => !!toDate && date > toDate}
                     initialFocus
                     className="p-3 pointer-events-auto"
                   />
@@ -221,7 +247,14 @@ const ReportsTab = () => {
                   <Calendar
                     mode="single"
                     selected={toDate}
-                    onSelect={setToDate}
+                    onSelect={(date) => {
+                      if (date && fromDate && date < fromDate) {
+                        toast.error('To date cannot be before From date');
+                        return;
+                      }
+                      setToDate(date);
+                    }}
+                    disabled={(date) => !!fromDate && date < fromDate}
                     initialFocus
                     className="p-3 pointer-events-auto"
                   />
@@ -239,9 +272,14 @@ const ReportsTab = () => {
             </div>
           </div>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Filters Total Registrations, Fee Collection, and Pending Amount
-          </p>
+           {isRangeInvalid && (
+             <p className="text-sm text-destructive text-center mb-2">
+               Invalid date range: From must be earlier than or equal to To.
+             </p>
+           )}
+           <p className="text-center text-sm text-muted-foreground">
+             Filters Total Registrations, Fee Collection, and Pending Amount
+           </p>
         </CardContent>
       </Card>
 
@@ -348,11 +386,11 @@ const ReportsTab = () => {
               <div>
                 <h3 className="text-lg font-semibold text-yellow-800">Panchayath Performance Report</h3>
                 <div className="flex gap-2 mt-2">
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={handleExportExcel}>
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={handleExportExcel} disabled={isRangeInvalid || !fromDate || !toDate}>
                     <Download className="w-4 h-4 mr-2" />
                     Export Excel
                   </Button>
-                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white" onClick={handleExportPDF}>
+                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white" onClick={handleExportPDF} disabled={isRangeInvalid || !fromDate || !toDate}>
                     <FileText className="w-4 h-4 mr-2" />
                     Export PDF
                   </Button>
@@ -370,11 +408,11 @@ const ReportsTab = () => {
           <div className="flex items-center justify-between">
             <CardTitle>Approved Registrations in Date Range ({filteredRegistrations.length})</CardTitle>
             <div className="flex gap-2">
-              <Button onClick={handleExportExcel} variant="outline" size="sm">
+              <Button onClick={handleExportExcel} variant="outline" size="sm" disabled={isRangeInvalid || !fromDate || !toDate}>
                 <Download className="w-4 h-4 mr-2" />
                 Export Excel
               </Button>
-              <Button onClick={handleExportPDF} variant="outline" size="sm">
+              <Button onClick={handleExportPDF} variant="outline" size="sm" disabled={isRangeInvalid || !fromDate || !toDate}>
                 <FileText className="w-4 h-4 mr-2" />
                 Export PDF
               </Button>
@@ -382,7 +420,11 @@ const ReportsTab = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {filteredRegistrations.length === 0 ? (
+          {isRangeInvalid ? (
+            <div className="text-center py-8">
+              <p className="text-destructive">Invalid date range selected. Please correct From/To.</p>
+            </div>
+          ) : filteredRegistrations.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
                 {(!fromDate && !toDate) 
