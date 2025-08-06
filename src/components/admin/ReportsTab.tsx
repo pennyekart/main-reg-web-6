@@ -598,6 +598,36 @@ const ReportsTab = () => {
                               <div className="text-xs text-green-600 font-medium">
                                 Amount: ₹{registration.fee?.toLocaleString() || 0}
                               </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => submitRestore(registration)}
+                                className="h-7 px-2 text-xs mt-2"
+                              >
+                                Undo Verification
+                              </Button>
+                            </div>
+                          ) : verification?.restored_by ? (
+                            <div className="space-y-1">
+                              <Badge variant="destructive">
+                                Verification Undone
+                              </Badge>
+                              <div className="text-xs text-muted-foreground">
+                                Restored by: {verification.restored_by}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {verification.restored_at 
+                                  ? format(new Date(verification.restored_at), 'dd/MM/yyyy HH:mm')
+                                  : 'N/A'
+                                }
+                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => submitVerify(registration)}
+                                className="h-7 px-2 text-xs mt-2"
+                              >
+                                Re-Verify
+                              </Button>
                             </div>
                           ) : (
                             <div className="flex flex-col gap-2">
