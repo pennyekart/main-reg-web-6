@@ -21,6 +21,7 @@ interface Registration {
   categories: {
     name_english: string;
     name_malayalam: string;
+    qr_code_url?: string;
   } | null;
 }
 
@@ -43,7 +44,8 @@ const CheckStatus = () => {
           *,
           categories!registrations_category_id_fkey (
             name_english,
-            name_malayalam
+            name_malayalam,
+            qr_code_url
           )
         `)
         .or(`mobile_number.eq.${searchQuery},customer_id.eq.${searchQuery}`)
@@ -204,15 +206,31 @@ const CheckStatus = () => {
                   <div className="mt-4 p-4 border rounded-lg bg-muted">
                     <p className="font-semibold mb-2">Complete Payment</p>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Scan the QR code below to pay the registration fee. After payment, your application will be processed.
+                      Scan the QR code below to pay the registration fee of ₹{registration.fee}. After payment, your application will be processed.
                     </p>
-                    <div className="flex justify-center">
-                      <img
-                        src={supabase.storage.from('category-qr').getPublicUrl(`${registration.category_id}/payment-qr.png`).data.publicUrl}
-                        alt="Payment QR code"
-                        className="w-48 h-48 object-contain rounded-md border"
-                      />
-                    </div>
+                    {registration.categories?.qr_code_url ? (
+                      <div className="flex justify-center">
+                        <div className="bg-white p-4 rounded-lg border shadow-sm">
+                          <img
+                            src={registration.categories.qr_code_url}
+                            alt="Payment QR code"
+                            className="w-48 h-48 object-contain"
+                          />
+                          <p className="text-xs text-center text-muted-foreground mt-2">
+                            Payment QR Code for {registration.categories.name_english}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex justify-center">
+                        <div className="w-48 h-48 bg-gray-100 rounded-lg border border-dashed border-gray-300 flex items-center justify-center">
+                          <p className="text-sm text-gray-500 text-center">
+                            QR Code not available<br />
+                            Please contact support
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
