@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, Download, FileText } from 'lucide-react';
+import { CalendarIcon, Download, FileText, Users, Building, DollarSign, TrendingUp, ChevronRight } from 'lucide-react';
 
 const ReportsTab = () => {
   const [fromDate, setFromDate] = useState('01/07/2025');
@@ -135,6 +135,123 @@ const ReportsTab = () => {
           </p>
         </CardContent>
       </Card>
+
+      {/* Dashboard Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="h-5 w-5 text-blue-600" />
+              <span className="text-sm font-medium">Total Registrations</span>
+            </div>
+            <div className="text-2xl font-bold">163</div>
+            <p className="text-xs text-muted-foreground">Filtered by date range</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Building className="h-5 w-5 text-purple-600" />
+              <span className="text-sm font-medium">Total Categories</span>
+            </div>
+            <div className="text-2xl font-bold">7</div>
+            <p className="text-xs text-muted-foreground">7 active</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Building className="h-5 w-5 text-blue-600" />
+              <span className="text-sm font-medium">Total Panchayaths</span>
+            </div>
+            <div className="text-2xl font-bold">24</div>
+            <p className="text-xs text-muted-foreground"></p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-green-50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="h-5 w-5 text-green-600" />
+              <span className="text-sm font-medium">Total Fees Collected</span>
+            </div>
+            <div className="text-2xl font-bold text-green-600">₹3,900</div>
+            <p className="text-xs text-muted-foreground">Filtered by date range</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-orange-50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="h-5 w-5 text-orange-600" />
+              <span className="text-sm font-medium">Pending Amount</span>
+            </div>
+            <div className="text-2xl font-bold text-orange-600">₹13,500</div>
+            <p className="text-xs text-muted-foreground">Filtered by date range</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <span className="text-sm font-medium">Performance</span>
+            </div>
+            <div className="text-2xl font-bold text-green-600">Good</div>
+            <p className="text-xs text-muted-foreground">Active registrations</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Performance Reports */}
+      <div className="space-y-4">
+        <Card className="bg-green-50 border-green-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-green-800">Active Panchayath Report</h3>
+                <p className="text-sm text-green-600">Performance grading based on registrations and revenue collection</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-blue-800">Category Performance Report</h3>
+                <p className="text-sm text-blue-600">Total fee collected and registration count for each category</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-yellow-50 border-yellow-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-yellow-800">Panchayath Performance Report</h3>
+                <div className="flex gap-2 mt-2">
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Excel
+                  </Button>
+                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export PDF
+                  </Button>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-yellow-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Approved Registrations Table */}
       <Card>
