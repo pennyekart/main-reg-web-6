@@ -107,6 +107,50 @@ export type Database = {
         }
         Relationships: []
       }
+      registration_verifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          registration_id: string
+          restored_at: string | null
+          restored_by: string | null
+          updated_at: string | null
+          verified: boolean
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          registration_id: string
+          restored_at?: string | null
+          restored_by?: string | null
+          updated_at?: string | null
+          verified?: boolean
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          registration_id?: string
+          restored_at?: string | null
+          restored_by?: string | null
+          updated_at?: string | null
+          verified?: boolean
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_verifications_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: true
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registrations: {
         Row: {
           address: string
