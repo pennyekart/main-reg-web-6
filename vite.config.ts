@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     strictPort: true,
-    hmr: false,
+    hmr: { clientPort: 443, protocol: 'wss' },
   },
   plugins: [
     react(),
@@ -22,5 +22,6 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     global: 'globalThis',
+    __WS_TOKEN__: JSON.stringify(''),
   },
 }));
