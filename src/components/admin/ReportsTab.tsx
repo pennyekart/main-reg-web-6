@@ -12,6 +12,7 @@ import { CalendarIcon, Download, FileText, Users, Building, DollarSign, Trending
 import { toast } from 'sonner';
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
+import VerifyDialog from '@/components/admin/VerifyDialog';
 
 interface Registration {
   id: string;
@@ -44,6 +45,15 @@ interface Registration {
   };
 }
 
+interface Verification {
+  registration_id: string;
+  verified: boolean;
+  verified_by: string | null;
+  verified_at: string | null;
+  restored_by: string | null;
+  restored_at: string | null;
+}
+
 const ReportsTab = () => {
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
@@ -51,6 +61,11 @@ const ReportsTab = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [pendingRegistrations, setPendingRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [verifications, setVerifications] = useState<Record<string, Verification>>({});
+  const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
 
   useEffect(() => {
     fetchRegistrations();
@@ -75,7 +90,14 @@ const ReportsTab = () => {
         console.error('Error fetching registrations:', error);
         toast.error('Error fetching registrations');
       } else {
-        setRegistrations(data as unknown as Registration[] || []);
+        const regs = (data as unknown as Registration[]) || [];
+        setRegistrations(regs);
+        const ids = regs.map((r) => r.id);
+        if (ids.length > 0) {
+          await loadVerifications(ids);
+        } else {
+          setVerifications({});
+        }
       }
     } catch (error) {
       console.error('Error fetching registrations:', error);
@@ -105,6 +127,113 @@ const ReportsTab = () => {
       }
     } catch (error) {
       console.error('Error fetching pending registrations:', error);
+    }
+  };
+
+  const loadVerifications = async (registrationIds: string[]) => {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('registration_verifications')
+        .select('*')
+        .in('registration_id', registrationIds);
+
+      if (error) {
+        console.error('Error fetching verifications:', error);
+        return;
+      }
+
+      const map: Record<string, Verification> = {};
+      (data || []).forEach((row: any) => {
+        map[row.registration_id] = row as Verification;
+      });
+      setVerifications(map);
+    } catch (err) {
+      console.error('Error fetching verifications:', err);
+    }
+  };
+
+  const openVerifyDialog = (reg: Registration) => {
+    setSelectedRegistration(reg);
+    setVerifyDialogOpen(true);
+  };
+
+  const openRestoreDialog = (reg: Registration) => {
+    setSelectedRegistration(reg);
+    setRestoreDialogOpen(true);
+  };
+
+  const submitVerify = async (name: string) => {
+    if (!selectedRegistration) return;
+    try {
+      const payload = {
+        registration_id: selectedRegistration.id,
+        verified: true,
+        verified_by: name,
+        verified_at: new Date().toISOString(),
+        restored_by: null,
+        restored_at: null,
+      };
+
+      const { error } = await (supabase as any)
+        .from('registration_verifications')
+        .upsert(payload, { onConflict: 'registration_id' });
+
+      if (error) {
+        console.error('Verification failed:', error);
+        // 42P01 = undefined_table
+        if ((error as any).code === '42P01') {
+          toast.error('Database table missing: registration_verifications. Please run the setup SQL in Supabase.');
+        } else {
+          toast.error('Failed to verify');
+        }
+        return;
+      }
+
+      setVerifications((prev) => ({ ...prev, [selectedRegistration.id]: payload as Verification }));
+      toast.success('Verified successfully');
+    } catch (err) {
+      console.error('Verification failed:', err);
+      toast.error('Failed to verify');
+    } finally {
+      setVerifyDialogOpen(false);
+      setSelectedRegistration(null);
+    }
+  };
+
+  const submitRestore = async (name: string) => {
+    if (!selectedRegistration) return;
+    try {
+      const payload = {
+        registration_id: selectedRegistration.id,
+        verified: false,
+        verified_by: null,
+        verified_at: null,
+        restored_by: name,
+        restored_at: new Date().toISOString(),
+      };
+
+      const { error } = await (supabase as any)
+        .from('registration_verifications')
+        .upsert(payload, { onConflict: 'registration_id' });
+
+      if (error) {
+        console.error('Restore failed:', error);
+        if ((error as any).code === '42P01') {
+          toast.error('Database table missing: registration_verifications. Please run the setup SQL in Supabase.');
+        } else {
+          toast.error('Failed to restore');
+        }
+        return;
+      }
+
+      setVerifications((prev) => ({ ...prev, [selectedRegistration.id]: payload as Verification }));
+      toast.success('Restored successfully');
+    } catch (err) {
+      console.error('Restore failed:', err);
+      toast.error('Failed to restore');
+    } finally {
+      setRestoreDialogOpen(false);
+      setSelectedRegistration(null);
     }
   };
 
@@ -443,31 +572,71 @@ const ReportsTab = () => {
                   <TableHead>Fee Paid</TableHead>
                   <TableHead>Approved By</TableHead>
                   <TableHead>Approved Date</TableHead>
+                  <TableHead>Verification</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRegistrations.map((registration) => (
-                  <TableRow key={registration.id}>
-                    <TableCell className="font-medium">{registration.full_name}</TableCell>
-                    <TableCell>{registration.mobile_number}</TableCell>
-                    <TableCell className="max-w-md">
-                      {registration.categories?.name_english || 'N/A'}
-                    </TableCell>
-                    <TableCell>₹{registration.fee || 0}</TableCell>
-                    <TableCell>{registration.approved_by || 'N/A'}</TableCell>
-                    <TableCell>
-                      {registration.approved_date 
-                        ? format(new Date(registration.approved_date), 'dd/MM/yyyy')
-                        : 'N/A'
-                      }
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredRegistrations.map((registration) => {
+                  const v = verifications[registration.id];
+                  const verifiedAt = v?.verified_at ? new Date(v.verified_at) : null;
+                  return (
+                    <TableRow key={registration.id}>
+                      <TableCell className="font-medium">{registration.full_name}</TableCell>
+                      <TableCell>{registration.mobile_number}</TableCell>
+                      <TableCell className="max-w-md">
+                        {registration.categories?.name_english || 'N/A'}
+                      </TableCell>
+                      <TableCell>₹{registration.fee || 0}</TableCell>
+                      <TableCell>{registration.approved_by || 'N/A'}</TableCell>
+                      <TableCell>
+                        {registration.approved_date 
+                          ? format(new Date(registration.approved_date), 'dd/MM/yyyy')
+                          : 'N/A'
+                        }
+                      </TableCell>
+                      <TableCell>
+                        {v?.verified ? (
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">Verified</Badge>
+                            <Button variant="link" size="sm" onClick={() => openRestoreDialog(registration)}>
+                              {v.verified_by || 'N/A'} • {verifiedAt ? format(verifiedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => openRestoreDialog(registration)}>
+                              Restore
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button size="sm" onClick={() => openVerifyDialog(registration)}>
+                            Verify
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
         </CardContent>
       </Card>
+
+      <VerifyDialog
+        open={verifyDialogOpen}
+        onOpenChange={setVerifyDialogOpen}
+        title="Verify registration"
+        description="Confirm final verification for this registration."
+        confirmLabel="Verify"
+        onConfirm={submitVerify}
+      />
+
+      <VerifyDialog
+        open={restoreDialogOpen}
+        onOpenChange={setRestoreDialogOpen}
+        title="Restore (undo verification)"
+        description="This will mark the registration as not verified."
+        confirmLabel="Restore"
+        onConfirm={submitRestore}
+      />
     </div>
   );
 };
