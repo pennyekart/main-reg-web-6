@@ -271,9 +271,33 @@ const ReportsTab = () => {
       toast.error('Invalid date range: From date must be before or equal to To date');
       return;
     }
-    // Export logic for Excel
-    console.log('Exporting to Excel...', filteredRegistrations);
-    toast.success('Export Excel functionality to be implemented');
+    
+    // Create CSV content
+    const headers = ['Name', 'Mobile Number', 'Category', 'Fee Paid', 'Approved By', 'Approved Date'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredRegistrations.map(reg => [
+        `"${reg.full_name}"`,
+        reg.mobile_number,
+        `"${reg.categories?.name_english || 'N/A'}"`,
+        reg.fee || 0,
+        `"${reg.approved_by || 'N/A'}"`,
+        reg.approved_date ? format(new Date(reg.approved_date), 'dd/MM/yyyy') : 'N/A'
+      ].join(','))
+    ].join('\n');
+    
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `paid-registrations-${format(fromDate, 'dd-MM-yyyy')}-to-${format(toDate, 'dd-MM-yyyy')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success('Excel file downloaded successfully');
   };
 
   const handleExportPDF = () => {
@@ -519,103 +543,100 @@ const ReportsTab = () => {
         </Card>
       </div>
 
-      {/* Approved Registrations Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Paid Approved Registrations in Date Range ({filteredRegistrations.length})</CardTitle>
-            <div className="flex gap-2">
-              <Button onClick={handleExportExcel} variant="outline" size="sm" disabled={isRangeInvalid || !fromDate || !toDate}>
-                <Download className="w-4 h-4 mr-2" />
-                Export Excel
-              </Button>
-              <Button onClick={handleExportPDF} variant="outline" size="sm" disabled={isRangeInvalid || !fromDate || !toDate}>
-                <FileText className="w-4 h-4 mr-2" />
-                Export PDF
-              </Button>
+      {/* Approved Registrations Table - Only show when date filter is active */}
+      {(fromDate || toDate) && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Paid Approved Registrations in Date Range ({filteredRegistrations.length})</CardTitle>
+              <div className="flex gap-2">
+                <Button onClick={handleExportExcel} variant="outline" size="sm" disabled={isRangeInvalid || !fromDate || !toDate}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Excel
+                </Button>
+                <Button onClick={handleExportPDF} variant="outline" size="sm" disabled={isRangeInvalid || !fromDate || !toDate}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export PDF
+                </Button>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isRangeInvalid ? (
-            <div className="text-center py-8">
-              <p className="text-destructive">Invalid date range selected. Please correct From/To.</p>
-            </div>
-          ) : filteredRegistrations.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                {(!fromDate && !toDate) 
-                  ? "Please select date range to view approved registrations."
-                  : "No approved registrations found in the selected date range."
-                }
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Mobile Number</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Fee Paid</TableHead>
-                  <TableHead>Approved By</TableHead>
-                  <TableHead>Approved Date</TableHead>
-                  <TableHead>Verification</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRegistrations.map((registration) => {
-                  const v = verifications[registration.id];
-                  const verifiedAt = v?.verified_at ? new Date(v.verified_at) : null;
-                  return (
-                    <TableRow key={registration.id}>
-                      <TableCell className="font-medium">{registration.full_name}</TableCell>
-                      <TableCell>{registration.mobile_number}</TableCell>
-                      <TableCell className="max-w-md">
-                        {registration.categories?.name_english || 'N/A'}
-                      </TableCell>
-                      <TableCell>₹{registration.fee || 0}</TableCell>
-                      <TableCell>{registration.approved_by || 'N/A'}</TableCell>
-                      <TableCell>
-                        {registration.approved_date 
-                          ? format(new Date(registration.approved_date), 'dd/MM/yyyy')
-                          : 'N/A'
-                        }
-                      </TableCell>
-                      <TableCell>
-                        {v?.verified ? (
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary">Verified</Badge>
-                            <span className="text-sm text-muted-foreground">
-                              {v.verified_by || 'N/A'} • {verifiedAt ? format(verifiedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}
-                            </span>
+          </CardHeader>
+          <CardContent>
+            {isRangeInvalid ? (
+              <div className="text-center py-8">
+                <p className="text-destructive">Invalid date range selected. Please correct From/To.</p>
+              </div>
+            ) : filteredRegistrations.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No paid approved registrations found in the selected date range.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Mobile Number</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Fee Paid</TableHead>
+                    <TableHead>Approved By</TableHead>
+                    <TableHead>Approved Date</TableHead>
+                    <TableHead>Verification</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredRegistrations.map((registration) => {
+                    const v = verifications[registration.id];
+                    const verifiedAt = v?.verified_at ? new Date(v.verified_at) : null;
+                    return (
+                      <TableRow key={registration.id}>
+                        <TableCell className="font-medium">{registration.full_name}</TableCell>
+                        <TableCell>{registration.mobile_number}</TableCell>
+                        <TableCell className="max-w-md">
+                          {registration.categories?.name_english || 'N/A'}
+                        </TableCell>
+                        <TableCell>₹{registration.fee || 0}</TableCell>
+                        <TableCell>{registration.approved_by || 'N/A'}</TableCell>
+                        <TableCell>
+                          {registration.approved_date 
+                            ? format(new Date(registration.approved_date), 'dd/MM/yyyy')
+                            : 'N/A'
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {v?.verified ? (
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary">Verified</Badge>
+                              <span className="text-sm text-muted-foreground">
+                                {v.verified_by || 'N/A'} • {verifiedAt ? format(verifiedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}
+                              </span>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => submitRestore(registration)}
+                                disabled={!currentAdminName}
+                              >
+                                Restore as {currentAdminName || 'Unknown'}
+                              </Button>
+                            </div>
+                          ) : (
                             <Button 
-                              variant="outline" 
                               size="sm" 
-                              onClick={() => submitRestore(registration)}
+                              onClick={() => submitVerify(registration)}
                               disabled={!currentAdminName}
                             >
-                              Restore as {currentAdminName || 'Unknown'}
+                              Verify as {currentAdminName || 'Unknown'}
                             </Button>
-                          </div>
-                        ) : (
-                          <Button 
-                            size="sm" 
-                            onClick={() => submitVerify(registration)}
-                            disabled={!currentAdminName}
-                          >
-                            Verify as {currentAdminName || 'Unknown'}
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
     </div>
   );
