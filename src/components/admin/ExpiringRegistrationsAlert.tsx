@@ -68,7 +68,7 @@ const ExpiringRegistrationsAlert = ({
       const htmlContent = `
         <html>
           <head>
-            <title>Expiring Registrations Report</title>
+            <title>Expired Registrations Report</title>
             <style>
               body { font-family: Arial, sans-serif; margin: 20px; }
               h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
@@ -78,9 +78,9 @@ const ExpiringRegistrationsAlert = ({
             </style>
           </head>
           <body>
-            <h1>Expiring Registrations Alert</h1>
+            <h1>Expired Registrations Alert</h1>
             <p><strong>Generated on:</strong> ${format(new Date(), 'dd/MM/yyyy HH:mm')}</p>
-            <p><strong>Total registrations expiring within 5 days:</strong> ${registrations.length}</p>
+            <p><strong>Total expired registrations:</strong> ${registrations.length}</p>
             ${registrations.map(reg => `
               <div class="registration">
                 <div class="header">${reg.name}</div>
@@ -118,13 +118,13 @@ const handleGotIt = () => {
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-red-600">
             <FileText className="h-5 w-5" />
-            Pending Registrations Alert
+            Expired Registrations Alert
           </DialogTitle>
         </DialogHeader>
         
         <div className="flex-1 overflow-y-auto">
           <p className="text-sm text-muted-foreground mb-4">
-            {registrations.length} registration(s) expiring within 5 days:
+            {registrations.length} registration(s) expired:
           </p>
           
           <div className="space-y-4">
@@ -136,7 +136,7 @@ const handleGotIt = () => {
                     <span className="font-medium">{registration.name}</span>
                   </div>
                   <Badge variant={registration.days_remaining <= 2 ? "destructive" : "secondary"}>
-                    {registration.days_remaining} days
+                    Expired
                   </Badge>
                 </div>
                 

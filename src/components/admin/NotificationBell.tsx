@@ -70,7 +70,7 @@ const { toast } = useToast();
             days_remaining: diffDays
           };
         })
-        .filter(reg => reg.days_remaining <= 5 && reg.days_remaining > 0)
+        .filter(reg => reg.days_remaining <= 0)
         .sort((a, b) => a.days_remaining - b.days_remaining);
 
       setExpiringRegistrations(expiringRegs);
