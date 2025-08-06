@@ -256,6 +256,10 @@ const ReportsTab = () => {
   const totalCategories = [...new Set(filteredRegistrations.map(reg => reg.category_id))].length;
   const totalPanchayaths = [...new Set(filteredRegistrations.map(reg => reg.panchayath_id))].filter(Boolean).length;
   const pendingAmount = pendingRegistrations.reduce((sum, reg) => sum + (reg.fee || 0), 0);
+  
+  // Calculate verified amounts
+  const verifiedRegistrations = filteredRegistrations.filter(reg => verifications[reg.id]?.verified);
+  const totalVerifiedAmount = verifiedRegistrations.reduce((sum, reg) => sum + (reg.fee || 0), 0);
 
   const handleClear = () => {
     setFromDate(undefined);
@@ -481,120 +485,94 @@ const ReportsTab = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-blue-50">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-medium">Performance</span>
+              <DollarSign className="h-5 w-5 text-blue-600" />
+              <span className="text-sm font-medium">Verified Amount</span>
             </div>
-            <div className="text-2xl font-bold text-green-600">
-              {totalRegistrations > 50 ? 'Excellent' : totalRegistrations > 20 ? 'Good' : 'Fair'}
-            </div>
-            <p className="text-xs text-muted-foreground">Active registrations</p>
+            <div className="text-2xl font-bold text-blue-600">₹{totalVerifiedAmount.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Total verified fees</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Performance Reports */}
-      <div className="space-y-4">
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-green-800">Active Panchayath Report</h3>
-                <p className="text-sm text-green-600">Performance grading based on registrations and revenue collection</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Export Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Export Reports</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <Button 
+              onClick={handleExportExcel}
+              disabled={!fromDate || !toDate || isRangeInvalid}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Export to Excel
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={handleExportPDF}
+              disabled={!fromDate || !toDate || isRangeInvalid}
+              className="flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Export to PDF
+            </Button>
+          </div>
+          {(!fromDate || !toDate) && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Please select both From and To dates to enable export
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-blue-800">Category Performance Report</h3>
-                <p className="text-sm text-blue-600">Total fee collected and registration count for each category</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-yellow-50 border-yellow-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-yellow-800">Panchayath Performance Report</h3>
-                <div className="flex gap-2 mt-2">
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={handleExportExcel} disabled={isRangeInvalid || !fromDate || !toDate}>
-                    <Download className="w-4 h-4 mr-2" />
-                    Export Excel
-                  </Button>
-                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white" onClick={handleExportPDF} disabled={isRangeInvalid || !fromDate || !toDate}>
-                    <FileText className="w-4 h-4 mr-2" />
-                    Export PDF
-                  </Button>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Approved Registrations Table - Only show when date filter is active */}
-      {(fromDate || toDate) && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Paid Approved Registrations in Date Range ({filteredRegistrations.length})</CardTitle>
-              <div className="flex gap-2">
-                <Button onClick={handleExportExcel} variant="outline" size="sm" disabled={isRangeInvalid || !fromDate || !toDate}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export Excel
-                </Button>
-                <Button onClick={handleExportPDF} variant="outline" size="sm" disabled={isRangeInvalid || !fromDate || !toDate}>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Export PDF
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isRangeInvalid ? (
-              <div className="text-center py-8">
-                <p className="text-destructive">Invalid date range selected. Please correct From/To.</p>
-              </div>
-            ) : filteredRegistrations.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No paid approved registrations found in the selected date range.</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
+      {/* Paid Approved Registrations Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Paid Approved Registrations in Date Range</CardTitle>
+            <Badge variant="outline">{totalRegistrations} records</Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Customer ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Mobile</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Fee Paid</TableHead>
+                  <TableHead>Approved By</TableHead>
+                  <TableHead>Approved Date</TableHead>
+                  <TableHead>Verification</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredRegistrations.length === 0 ? (
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Mobile Number</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Fee Paid</TableHead>
-                    <TableHead>Approved By</TableHead>
-                    <TableHead>Approved Date</TableHead>
-                    <TableHead>Verification</TableHead>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      {fromDate && toDate 
+                        ? "No paid registrations found in the selected date range"
+                        : "Select a date range to view paid registrations"
+                      }
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRegistrations.map((registration) => {
-                    const v = verifications[registration.id];
-                    const verifiedAt = v?.verified_at ? new Date(v.verified_at) : null;
+                ) : (
+                  filteredRegistrations.map((registration) => {
+                    const verification = verifications[registration.id];
                     return (
                       <TableRow key={registration.id}>
-                        <TableCell className="font-medium">{registration.full_name}</TableCell>
+                        <TableCell className="font-medium">{registration.customer_id}</TableCell>
+                        <TableCell>{registration.full_name}</TableCell>
                         <TableCell>{registration.mobile_number}</TableCell>
-                        <TableCell className="max-w-md">
-                          {registration.categories?.name_english || 'N/A'}
-                        </TableCell>
-                        <TableCell>₹{registration.fee || 0}</TableCell>
+                        <TableCell>{registration.categories?.name_english || 'N/A'}</TableCell>
+                        <TableCell className="text-green-600 font-medium">₹{registration.fee?.toLocaleString() || 0}</TableCell>
                         <TableCell>{registration.approved_by || 'N/A'}</TableCell>
                         <TableCell>
                           {registration.approved_date 
@@ -603,41 +581,46 @@ const ReportsTab = () => {
                           }
                         </TableCell>
                         <TableCell>
-                          {v?.verified ? (
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary">Verified</Badge>
-                              <span className="text-sm text-muted-foreground">
-                                {v.verified_by || 'N/A'} • {verifiedAt ? format(verifiedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}
-                              </span>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => submitRestore(registration)}
-                                disabled={!currentAdminName}
-                              >
-                                Restore as {currentAdminName || 'Unknown'}
-                              </Button>
+                          {verification?.verified ? (
+                            <div className="space-y-1">
+                              <Badge variant="default" className="bg-green-600 text-white">
+                                Verified
+                              </Badge>
+                              <div className="text-xs text-muted-foreground">
+                                By: {verification.verified_by}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {verification.verified_at 
+                                  ? format(new Date(verification.verified_at), 'dd/MM/yyyy HH:mm')
+                                  : 'N/A'
+                                }
+                              </div>
+                              <div className="text-xs text-green-600 font-medium">
+                                Amount: ₹{registration.fee?.toLocaleString() || 0}
+                              </div>
                             </div>
                           ) : (
-                            <Button 
-                              size="sm" 
-                              onClick={() => submitVerify(registration)}
-                              disabled={!currentAdminName}
-                            >
-                              Verify as {currentAdminName || 'Unknown'}
-                            </Button>
+                            <div className="flex flex-col gap-2">
+                              <Badge variant="secondary">Not Verified</Badge>
+                              <Button
+                                size="sm"
+                                onClick={() => submitVerify(registration)}
+                                className="h-7 px-2 text-xs"
+                              >
+                                Verify
+                              </Button>
+                            </div>
                           )}
                         </TableCell>
                       </TableRow>
                     );
-                  })}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -357,6 +357,54 @@ const AccountsTab = () => {
 
   const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
 
+  // Fetch verification-related cash amounts
+  const [verificationAmounts, setVerificationAmounts] = useState({
+    totalVerificationFees: 0,
+    mainCashFromVerifications: 0
+  });
+
+  const fetchVerificationAmounts = async () => {
+    try {
+      // Get total fees from verified registrations
+      const { data: verifiedRegistrations, error: verificationError } = await supabase
+        .from('registrations')
+        .select(`
+          fee,
+          registration_verifications!inner (
+            verified,
+            verified_at
+          )
+        `)
+        .eq('registration_verifications.verified', true)
+        .not('registration_verifications.verified_at', 'is', null);
+
+      if (verificationError) throw verificationError;
+
+      const totalVerificationFees = (verifiedRegistrations || [])
+        .reduce((sum, reg) => sum + (reg.fee || 0), 0);
+
+      // Find main cash account
+      const mainCashAccount = accounts.find(acc => 
+        acc.name.toLowerCase().includes('main') || 
+        acc.name.toLowerCase().includes('cash')
+      );
+
+      setVerificationAmounts({
+        totalVerificationFees,
+        mainCashFromVerifications: mainCashAccount ? totalVerificationFees : 0
+      });
+
+    } catch (error) {
+      console.error('Error fetching verification amounts:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      fetchVerificationAmounts();
+    }
+  }, [accounts]);
+
   if (loading) {
     return (
       <Card>
@@ -381,6 +429,11 @@ const AccountsTab = () => {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">{account.name}</p>
                   <p className="text-2xl font-bold">₹{account.balance.toFixed(2)}</p>
+                  {(account.name.toLowerCase().includes('main') || account.name.toLowerCase().includes('cash')) && (
+                    <p className="text-xs text-green-600 mt-1">
+                      From Verifications: ₹{verificationAmounts.mainCashFromVerifications.toFixed(2)}
+                    </p>
+                  )}
                 </div>
                 <DollarSign className="h-8 w-8 text-muted-foreground" />
               </div>
