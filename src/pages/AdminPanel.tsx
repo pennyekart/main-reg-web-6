@@ -43,15 +43,31 @@ const AdminPanel = () => {
         </div>
         
         <Tabs defaultValue="registrations" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1">
-            <TabsTrigger value="registrations" className="text-xs sm:text-sm">Registrations</TabsTrigger>
-            <TabsTrigger value="categories" className="text-xs sm:text-sm">Categories</TabsTrigger>
-            <TabsTrigger value="panchayaths" className="text-xs sm:text-sm">Panchayaths</TabsTrigger>
-            <TabsTrigger value="announcements" className="text-xs sm:text-sm">Announcements</TabsTrigger>
-            <TabsTrigger value="utilities" className="text-xs sm:text-sm">Utilities</TabsTrigger>
-            <TabsTrigger value="accounts" className="text-xs sm:text-sm">Accounts</TabsTrigger>
-            <TabsTrigger value="reports" className="text-xs sm:text-sm">Reports</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="flex w-max sm:grid sm:w-full sm:grid-cols-4 lg:grid-cols-7 h-auto p-1">
+              <TabsTrigger value="registrations" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                Registrations
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                Categories
+              </TabsTrigger>
+              <TabsTrigger value="panchayaths" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                Panchayaths
+              </TabsTrigger>
+              <TabsTrigger value="announcements" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                Announcements
+              </TabsTrigger>
+              <TabsTrigger value="utilities" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                Utilities
+              </TabsTrigger>
+              <TabsTrigger value="accounts" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                Accounts
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                Reports
+              </TabsTrigger>
+            </TabsList>
+          </div>
           
           <TabsContent value="registrations">
             <RegistrationsTab />
