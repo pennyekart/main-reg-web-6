@@ -223,9 +223,13 @@ const ReportsTab = () => {
 
   const isRangeInvalid = !!fromDate && !!toDate && fromDate > toDate;
 
-  // Filter registrations by date range
+  // Filter registrations by date range and exclude free registrations
   const filteredRegistrations = registrations.filter(registration => {
-    // If no dates are selected, return all registrations
+    // Only include paid registrations (exclude free registrations where fee is 0 or null)
+    const isPaidRegistration = registration.fee !== null && registration.fee > 0;
+    if (!isPaidRegistration) return false;
+    
+    // If no dates are selected, return all paid registrations
     if (!fromDate && !toDate) return true;
     if (isRangeInvalid) return false;
     
@@ -391,8 +395,8 @@ const ReportsTab = () => {
              </p>
            )}
            <p className="text-center text-sm text-muted-foreground">
-             Filters Total Registrations, Fee Collection, and Pending Amount
-           </p>
+              Filters only paid registrations (excludes free registrations)
+            </p>
         </CardContent>
       </Card>
 
@@ -519,7 +523,7 @@ const ReportsTab = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Approved Registrations in Date Range ({filteredRegistrations.length})</CardTitle>
+            <CardTitle>Paid Approved Registrations in Date Range ({filteredRegistrations.length})</CardTitle>
             <div className="flex gap-2">
               <Button onClick={handleExportExcel} variant="outline" size="sm" disabled={isRangeInvalid || !fromDate || !toDate}>
                 <Download className="w-4 h-4 mr-2" />
