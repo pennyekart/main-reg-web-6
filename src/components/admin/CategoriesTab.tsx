@@ -43,6 +43,8 @@ const CategoriesTab = () => {
     offer_fee: 0,
     expiry_days: 30
   });
+  const [qrFile, setQrFile] = useState<File | null>(null);
+  const [qrPreview, setQrPreview] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -78,6 +80,8 @@ const CategoriesTab = () => {
       expiry_days: 30
     });
     setEditingCategory(null);
+    setQrFile(null);
+    setQrPreview(null);
   };
 
   const handleAddNew = () => {
@@ -95,6 +99,8 @@ const CategoriesTab = () => {
       expiry_days: category.expiry_days
     });
     setEditingCategory(category);
+    setQrFile(null);
+    setQrPreview(null);
     setShowDialog(true);
   };
 
@@ -107,33 +113,81 @@ const CategoriesTab = () => {
     }
 
     try {
+      const bucket = 'category-qr';
+
       if (editingCategory) {
+        // Update category basic fields
         const { error } = await supabase
           .from('categories')
-          .update(formData)
+          .update({
+            name_english: formData.name_english,
+            name_malayalam: formData.name_malayalam,
+            description: formData.description,
+            actual_fee: formData.actual_fee,
+            offer_fee: formData.offer_fee,
+            expiry_days: formData.expiry_days,
+          })
           .eq('id', editingCategory.id);
 
         if (error) {
           toast.error('Error updating category');
-        } else {
-          toast.success('Category updated successfully');
-          setShowDialog(false);
-          fetchCategories();
-          resetForm();
+          return;
         }
+
+        // Upload QR if a file is selected
+        if (qrFile) {
+          const path = `${editingCategory.id}/payment-qr.png`;
+          const { error: uploadError } = await supabase.storage
+            .from(bucket)
+            .upload(path, qrFile, { upsert: true });
+
+          if (uploadError) {
+            toast.error('Failed to upload QR image');
+          } else {
+            toast.success('QR image saved for this category');
+          }
+        }
+
+        toast.success('Category updated successfully');
+        setShowDialog(false);
+        fetchCategories();
+        resetForm();
       } else {
-        const { error } = await supabase
+        // Create category first to get an ID
+        const { data: created, error } = await supabase
           .from('categories')
-          .insert(formData);
+          .insert({
+            name_english: formData.name_english,
+            name_malayalam: formData.name_malayalam,
+            description: formData.description,
+            actual_fee: formData.actual_fee,
+            offer_fee: formData.offer_fee,
+            expiry_days: formData.expiry_days,
+          })
+          .select('id')
+          .single();
 
         if (error) {
           toast.error('Error creating category');
-        } else {
-          toast.success('Category created successfully');
-          setShowDialog(false);
-          fetchCategories();
-          resetForm();
+          return;
         }
+
+        // If a QR file was selected during creation, upload it now
+        if (qrFile && created?.id) {
+          const path = `${created.id}/payment-qr.png`;
+          const { error: uploadError } = await supabase.storage
+            .from(bucket)
+            .upload(path, qrFile, { upsert: true });
+
+          if (uploadError) {
+            toast.error('Failed to upload QR image');
+          }
+        }
+
+        toast.success('Category created successfully');
+        setShowDialog(false);
+        fetchCategories();
+        resetForm();
       }
     } catch (error) {
       toast.error('Error saving category');
@@ -261,13 +315,41 @@ const CategoriesTab = () => {
                   />
                 </div>
 
-                <div className="flex gap-2">
-                  <Button type="submit" className="flex-1">
-                    {editingCategory ? 'Update' : 'Create'}
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
-                    Cancel
-                  </Button>
+                <div className="space-y-4">
+                  {editingCategory ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="payment_qr">Payment QR (image)</Label>
+                      <Input
+                        id="payment_qr"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setQrFile(file);
+                          setQrPreview(file ? URL.createObjectURL(file) : null);
+                        }}
+                      />
+                      {qrPreview && (
+                        <img src={qrPreview} alt="QR preview" className="h-32 w-32 object-contain border rounded" />
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        This QR will be shown on Check Status for pending paid registrations in this category.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground">
+                      Save the category first, then reopen Edit to upload its QR image.
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button type="submit" className="flex-1">
+                      {editingCategory ? 'Update' : 'Create'}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               </form>
             </DialogContent>
