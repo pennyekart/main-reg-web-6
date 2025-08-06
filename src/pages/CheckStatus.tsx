@@ -16,6 +16,7 @@ interface Registration {
   status: string;
   created_at: string;
   expiry_date: string;
+  fee: number | null;
   categories: {
     name_english: string;
     name_malayalam: string;
@@ -26,6 +27,8 @@ const CheckStatus = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [registration, setRegistration] = useState<Registration | null>(null);
   const [loading, setLoading] = useState(false);
+  const [paymentQRUrl, setPaymentQRUrl] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -54,7 +57,13 @@ const CheckStatus = () => {
         toast.error('No registration found with this mobile number or customer ID');
         setRegistration(null);
       } else {
-        setRegistration(data as unknown as Registration);
+        const reg = data as unknown as Registration;
+        setRegistration(reg);
+        if (reg.status === 'pending' && (reg.fee ?? 0) > 0) {
+          fetchPaymentQR();
+        } else {
+          setPaymentQRUrl(null);
+        }
       }
     } catch (error) {
       toast.error('Error searching for registration');
@@ -83,6 +92,31 @@ const CheckStatus = () => {
         return 'Rejected / നിരസിച്ചു';
       default:
         return 'Pending / കാത്തിരിക്കുന്നു';
+    }
+  };
+
+  // Load Payment QR from Utilities when needed
+  const fetchPaymentQR = async () => {
+    setQrLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('utilities')
+        .select('url')
+        .eq('name', 'Payment QR')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        setPaymentQRUrl(null);
+      } else {
+        setPaymentQRUrl((data as { url: string } | null)?.url ?? null);
+      }
+    } catch (e) {
+      setPaymentQRUrl(null);
+    } finally {
+      setQrLoading(false);
     }
   };
 
@@ -196,6 +230,31 @@ const CheckStatus = () => {
                     </p>
                   </div>
                 )}
+                {/* Payment QR for pending paid registrations */}
+                {registration.status === 'pending' && (registration.fee ?? 0) > 0 && (
+                  <div className="mt-4 p-4 border rounded-lg bg-muted">
+                    <p className="font-semibold mb-2">Complete Payment</p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Scan the QR code below to pay the registration fee. After payment, your application will be processed.
+                    </p>
+                    {qrLoading ? (
+                      <div className="text-center text-sm text-muted-foreground">Loading QR...</div>
+                    ) : paymentQRUrl ? (
+                      <div className="flex justify-center">
+                        <img
+                          src={paymentQRUrl}
+                          alt="Payment QR code"
+                          className="w-48 h-48 object-contain rounded-md border"
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-center text-sm text-muted-foreground">
+                        Payment QR is currently unavailable. Please try again later.
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </CardContent>
             </Card>
           </div>
