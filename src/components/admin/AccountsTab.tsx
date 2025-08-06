@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { DollarSign, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import TransactionTable from './transactions/TransactionTable';
+import EditTransactionDialog from './transactions/EditTransactionDialog';
+import DeleteTransactionDialog from './transactions/DeleteTransactionDialog';
 
 interface CashAccount {
   id: string;
@@ -11,10 +15,24 @@ interface CashAccount {
   is_active: boolean;
 }
 
+interface Transaction {
+  id: string;
+  amount: number;
+  type: string;
+  description: string | null;
+  reference_number: string | null;
+  created_at: string;
+  account_id: string;
+  created_by: string | null;
+}
+
 const AccountsTab = () => {
   const { toast } = useToast();
   const [accounts, setAccounts] = useState<CashAccount[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
+  const [deleteTransactionId, setDeleteTransactionId] = useState<string | null>(null);
 
   // Fetch verification-related cash amounts
   const [verificationAmounts, setVerificationAmounts] = useState({
@@ -28,13 +46,23 @@ const AccountsTab = () => {
 
       // Fetch accounts
       const { data: accountsData, error: accountsError } = await supabase
-        .from('cash_accounts')
+        .from('cash_accounts' as any)
         .select('*')
         .eq('is_active', true)
         .order('name');
 
       if (accountsError) throw accountsError;
-      setAccounts(accountsData || []);
+      setAccounts((accountsData || []) as unknown as CashAccount[]);
+
+      // Fetch transactions
+      const { data: transactionsData, error: transactionsError } = await supabase
+        .from('cash_transactions' as any)
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (transactionsError) throw transactionsError;
+      setTransactions((transactionsData || []) as unknown as Transaction[]);
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -81,7 +109,7 @@ const AccountsTab = () => {
 
       if (mainCashAccount && totalVerifiedAmount !== mainCashAccount.balance) {
         await supabase
-          .from('cash_accounts')
+          .from('cash_accounts' as any)
           .update({ balance: totalVerifiedAmount })
           .eq('id', mainCashAccount.id);
 
@@ -206,32 +234,57 @@ const AccountsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Recent Verification-Related Transactions */}
+      {/* All Transactions */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Verification Transactions</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Transactions</CardTitle>
+            <Button onClick={() => fetchData()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {verificationAmounts.totalVerificationFees > 0 ? (
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-green-800">Registration Verifications</p>
-                    <p className="text-sm text-green-600">Total amount from verified registrations</p>
-                  </div>
-                  <p className="text-lg font-bold text-green-700">
-                    ₹{verificationAmounts.totalVerificationFees.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <DollarSign className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                <p>No verified registrations yet</p>
-                <p className="text-sm">Cash will automatically update when registrations are verified</p>
-              </div>
-            )}
+          <TransactionTable
+            transactions={transactions}
+            accounts={accounts}
+            onEdit={setEditTransaction}
+            onDelete={setDeleteTransactionId}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Edit Transaction Dialog */}
+      <EditTransactionDialog
+        transaction={editTransaction}
+        accounts={accounts}
+        open={!!editTransaction}
+        onOpenChange={(open) => !open && setEditTransaction(null)}
+        onSuccess={fetchData}
+      />
+
+      {/* Delete Transaction Dialog */}
+      <DeleteTransactionDialog
+        transactionId={deleteTransactionId}
+        open={!!deleteTransactionId}
+        onOpenChange={(open) => !open && setDeleteTransactionId(null)}
+        onSuccess={fetchData}
+      />
+
+      {/* Verification Info */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <DollarSign className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-blue-800">Verification Summary</h3>
+              <p className="text-sm text-blue-600">
+                Total verified amount: ₹{verificationAmounts.totalVerificationFees.toFixed(2)}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
