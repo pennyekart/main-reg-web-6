@@ -11,6 +11,7 @@ import AnnouncementsTab from '@/components/admin/AnnouncementsTab';
 import UtilitiesTab from '@/components/admin/UtilitiesTab';
 import AccountsTab from '@/components/admin/AccountsTab';
 import ReportsTab from '@/components/admin/ReportsTab';
+import NotificationBell from '@/components/admin/NotificationBell';
 
 const AdminPanel = () => {
   const { isAdminLoggedIn, logout } = useAdminAuth();
@@ -37,9 +38,12 @@ const AdminPanel = () => {
       <div className="container mx-auto py-4 px-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold">Admin Panel</h1>
-          <Button onClick={handleLogout} variant="outline" size="sm">
-            Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Button onClick={handleLogout} variant="outline" size="sm">
+              Logout
+            </Button>
+          </div>
         </div>
         
         <Tabs defaultValue="registrations" className="w-full">
