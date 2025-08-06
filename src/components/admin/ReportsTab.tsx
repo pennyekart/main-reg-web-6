@@ -6,9 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, Download, FileText, Users, Building, DollarSign, TrendingUp, ChevronRight } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon, Download, FileText, Users, Building, DollarSign, TrendingUp, ChevronRight, Check, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface Registration {
   id: string;
@@ -27,6 +30,9 @@ interface Registration {
   category_id: string;
   preference_category_id?: string;
   panchayath_id?: string;
+  payment_verified?: boolean;
+  verified_by?: string;
+  verified_at?: string;
   categories: {
     name_english: string;
     name_malayalam: string;
@@ -42,14 +48,16 @@ interface Registration {
 }
 
 const ReportsTab = () => {
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [fromDate, setFromDate] = useState<Date | undefined>();
+  const [toDate, setToDate] = useState<Date | undefined>();
   const [hideVerification, setHideVerification] = useState(false);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [pendingRegistrations, setPendingRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchRegistrations();
+    fetchPendingRegistrations();
   }, []);
 
   const fetchRegistrations = async () => {
@@ -80,23 +88,39 @@ const ReportsTab = () => {
     }
   };
 
-  // Parse date from DD/MM/YYYY format
-  const parseDate = (dateString: string): Date | null => {
-    if (!dateString) return null;
-    const [day, month, year] = dateString.split('/');
-    if (!day || !month || !year) return null;
-    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  const fetchPendingRegistrations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('registrations')
+        .select(`
+          *,
+          categories:categories!registrations_category_id_fkey (name_english, name_malayalam),
+          preference_categories:categories!registrations_preference_category_id_fkey (name_english, name_malayalam),
+          panchayaths:panchayaths!registrations_panchayath_id_fkey (name, district)
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching pending registrations:', error);
+      } else {
+        setPendingRegistrations(data as unknown as Registration[] || []);
+      }
+    } catch (error) {
+      console.error('Error fetching pending registrations:', error);
+    }
   };
 
   // Filter registrations by date range
   const filteredRegistrations = registrations.filter(registration => {
-    if (!fromDate && !toDate) return true;
+    // If no dates are selected, return empty array
+    if (!fromDate && !toDate) return false;
     
     const registrationDate = registration.approved_date ? new Date(registration.approved_date) : null;
     if (!registrationDate) return false;
 
-    const fromDateTime = fromDate ? startOfDay(parseDate(fromDate) || new Date()) : null;
-    const toDateTime = toDate ? endOfDay(parseDate(toDate) || new Date()) : null;
+    const fromDateTime = fromDate ? startOfDay(fromDate) : null;
+    const toDateTime = toDate ? endOfDay(toDate) : null;
 
     if (fromDateTime && toDateTime) {
       return isWithinInterval(registrationDate, { start: fromDateTime, end: toDateTime });
@@ -106,7 +130,7 @@ const ReportsTab = () => {
       return registrationDate <= toDateTime;
     }
     
-    return true;
+    return false;
   });
 
   // Calculate metrics based on filtered data
@@ -114,10 +138,11 @@ const ReportsTab = () => {
   const totalFeesCollected = filteredRegistrations.reduce((sum, reg) => sum + (reg.fee || 0), 0);
   const totalCategories = [...new Set(filteredRegistrations.map(reg => reg.category_id))].length;
   const totalPanchayaths = [...new Set(filteredRegistrations.map(reg => reg.panchayath_id))].filter(Boolean).length;
+  const pendingAmount = pendingRegistrations.reduce((sum, reg) => sum + (reg.fee || 0), 0);
 
   const handleClear = () => {
-    setFromDate('');
-    setToDate('');
+    setFromDate(undefined);
+    setToDate(undefined);
     setHideVerification(false);
   };
 
@@ -133,16 +158,52 @@ const ReportsTab = () => {
     toast.success('Export PDF functionality to be implemented');
   };
 
-  const handleVerify = (id: string) => {
-    // Verification logic
-    console.log('Verifying registration:', id);
-    toast.success('Verification functionality to be implemented');
+  const handleVerify = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('registrations')
+        .update({ 
+          payment_verified: true,
+          verified_by: 'Admin',
+          verified_at: new Date().toISOString()
+        } as any)
+        .eq('id', id);
+
+      if (error) {
+        toast.error('Error verifying payment');
+        console.error('Error:', error);
+      } else {
+        toast.success('Payment verified successfully');
+        fetchRegistrations();
+      }
+    } catch (error) {
+      toast.error('Error verifying payment');
+      console.error('Error:', error);
+    }
   };
 
-  const handleClearVerification = (id: string) => {
-    // Clear verification logic
-    console.log('Clearing verification for:', id);
-    toast.success('Clear verification functionality to be implemented');
+  const handleRestoreVerification = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('registrations')
+        .update({ 
+          payment_verified: null,
+          verified_by: null,
+          verified_at: null
+        } as any)
+        .eq('id', id);
+
+      if (error) {
+        toast.error('Error restoring verification');
+        console.error('Error:', error);
+      } else {
+        toast.success('Verification restored successfully');
+        fetchRegistrations();
+      }
+    } catch (error) {
+      toast.error('Error restoring verification');
+      console.error('Error:', error);
+    }
   };
 
   if (loading) {
@@ -166,33 +227,57 @@ const ReportsTab = () => {
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
             <div className="flex items-center gap-2">
-              <Label htmlFor="from-date">From:</Label>
-              <div className="relative">
-                <Input
-                  id="from-date"
-                  type="text"
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                  placeholder="DD/MM/YYYY"
-                  className="w-32"
-                />
-                <CalendarIcon className="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              </div>
+              <Label>From:</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-40 justify-start text-left font-normal",
+                      !fromDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {fromDate ? format(fromDate, "dd/MM/yyyy") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={fromDate}
+                    onSelect={setFromDate}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             
             <div className="flex items-center gap-2">
-              <Label htmlFor="to-date">To:</Label>
-              <div className="relative">
-                <Input
-                  id="to-date"
-                  type="text"
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                  placeholder="DD/MM/YYYY"
-                  className="w-32"
-                />
-                <CalendarIcon className="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              </div>
+              <Label>To:</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-40 justify-start text-left font-normal",
+                      !toDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {toDate ? format(toDate, "dd/MM/yyyy") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={toDate}
+                    onSelect={setToDate}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="flex gap-2 ml-auto">
@@ -270,8 +355,8 @@ const ReportsTab = () => {
               <DollarSign className="h-5 w-5 text-orange-600" />
               <span className="text-sm font-medium">Pending Amount</span>
             </div>
-            <div className="text-2xl font-bold text-orange-600">₹0</div>
-            <p className="text-xs text-muted-foreground">All fees collected</p>
+            <div className="text-2xl font-bold text-orange-600">₹{pendingAmount.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Total pending fees</p>
           </CardContent>
         </Card>
 
@@ -357,7 +442,12 @@ const ReportsTab = () => {
         <CardContent>
           {filteredRegistrations.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No approved registrations found in the selected date range.</p>
+              <p className="text-muted-foreground">
+                {(!fromDate && !toDate) 
+                  ? "Please select date range to view approved registrations."
+                  : "No approved registrations found in the selected date range."
+                }
+              </p>
             </div>
           ) : (
             <Table>
@@ -369,7 +459,8 @@ const ReportsTab = () => {
                   <TableHead>Fee Paid</TableHead>
                   <TableHead>Approved By</TableHead>
                   <TableHead>Approved Date</TableHead>
-                  <TableHead>Verify</TableHead>
+                  {!hideVerification && <TableHead>Verification Status</TableHead>}
+                  {!hideVerification && <TableHead>Verify</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -388,15 +479,54 @@ const ReportsTab = () => {
                         : 'N/A'
                       }
                     </TableCell>
-                    <TableCell>
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleVerify(registration.id)}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        Verify
-                      </Button>
-                    </TableCell>
+                    {!hideVerification && (
+                      <TableCell>
+                        {registration.payment_verified ? (
+                          <div className="flex flex-col gap-1">
+                            <Badge variant="default" className="bg-green-100 text-green-800">
+                              <Check className="w-3 h-3 mr-1" />
+                              Verified
+                            </Badge>
+                            <div className="text-xs text-muted-foreground">
+                              By: {registration.verified_by}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {registration.verified_at && format(new Date(registration.verified_at), 'dd/MM/yyyy HH:mm')}
+                            </div>
+                          </div>
+                        ) : (
+                          <Badge variant="outline" className="text-orange-600 border-orange-600">
+                            Pending
+                          </Badge>
+                        )}
+                      </TableCell>
+                    )}
+                    {!hideVerification && (
+                      <TableCell>
+                        <div className="flex gap-2">
+                          {!registration.payment_verified ? (
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleVerify(registration.id)}
+                              className="bg-blue-600 hover:bg-blue-700"
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              Verify
+                            </Button>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleRestoreVerification(registration.id)}
+                              className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                            >
+                              <RotateCcw className="w-4 h-4 mr-1" />
+                              Restore
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
