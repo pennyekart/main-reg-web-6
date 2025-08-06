@@ -34,23 +34,23 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <div className="container mx-auto py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <Button onClick={handleLogout} variant="outline">
+      <div className="container mx-auto py-4 px-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold">Admin Panel</h1>
+          <Button onClick={handleLogout} variant="outline" size="sm">
             Logout
           </Button>
         </div>
         
         <Tabs defaultValue="registrations" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="registrations">Registrations</TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="panchayaths">Panchayaths</TabsTrigger>
-            <TabsTrigger value="announcements">Announcements</TabsTrigger>
-            <TabsTrigger value="utilities">Utilities</TabsTrigger>
-            <TabsTrigger value="accounts">Accounts</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1">
+            <TabsTrigger value="registrations" className="text-xs sm:text-sm">Registrations</TabsTrigger>
+            <TabsTrigger value="categories" className="text-xs sm:text-sm">Categories</TabsTrigger>
+            <TabsTrigger value="panchayaths" className="text-xs sm:text-sm">Panchayaths</TabsTrigger>
+            <TabsTrigger value="announcements" className="text-xs sm:text-sm">Announcements</TabsTrigger>
+            <TabsTrigger value="utilities" className="text-xs sm:text-sm">Utilities</TabsTrigger>
+            <TabsTrigger value="accounts" className="text-xs sm:text-sm">Accounts</TabsTrigger>
+            <TabsTrigger value="reports" className="text-xs sm:text-sm">Reports</TabsTrigger>
           </TabsList>
           
           <TabsContent value="registrations">
