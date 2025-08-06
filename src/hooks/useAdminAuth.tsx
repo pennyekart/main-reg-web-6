@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 
 interface AdminAuthContextType {
   isAdminLoggedIn: boolean;
+  currentAdminName: string | null;
   login: (username: string, password: string) => boolean;
   logout: () => void;
 }
@@ -10,18 +11,23 @@ const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefin
 
 export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [currentAdminName, setCurrentAdminName] = useState<string | null>(null);
 
   useEffect(() => {
     const savedAuth = localStorage.getItem('adminAuth');
-    if (savedAuth === 'true') {
+    const savedAdminName = localStorage.getItem('adminName');
+    if (savedAuth === 'true' && savedAdminName) {
       setIsAdminLoggedIn(true);
+      setCurrentAdminName(savedAdminName);
     }
   }, []);
 
   const login = (username: string, password: string): boolean => {
     if (username === 'eva' && password === '123') {
       setIsAdminLoggedIn(true);
+      setCurrentAdminName(username);
       localStorage.setItem('adminAuth', 'true');
+      localStorage.setItem('adminName', username);
       return true;
     }
     return false;
@@ -29,11 +35,13 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setIsAdminLoggedIn(false);
+    setCurrentAdminName(null);
     localStorage.removeItem('adminAuth');
+    localStorage.removeItem('adminName');
   };
 
   return (
-    <AdminAuthContext.Provider value={{ isAdminLoggedIn, login, logout }}>
+    <AdminAuthContext.Provider value={{ isAdminLoggedIn, currentAdminName, login, logout }}>
       {children}
     </AdminAuthContext.Provider>
   );

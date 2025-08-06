@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,7 @@ import { CalendarIcon, Download, FileText, Users, Building, DollarSign, Trending
 import { toast } from 'sonner';
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
-import VerifyDialog from '@/components/admin/VerifyDialog';
+
 
 interface Registration {
   id: string;
@@ -55,6 +56,7 @@ interface Verification {
 }
 
 const ReportsTab = () => {
+  const { currentAdminName } = useAdminAuth();
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
   
@@ -63,9 +65,6 @@ const ReportsTab = () => {
   const [loading, setLoading] = useState(true);
 
   const [verifications, setVerifications] = useState<Record<string, Verification>>({});
-  const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
-  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
-  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
 
   useEffect(() => {
     fetchRegistrations();
@@ -152,23 +151,14 @@ const ReportsTab = () => {
     }
   };
 
-  const openVerifyDialog = (reg: Registration) => {
-    setSelectedRegistration(reg);
-    setVerifyDialogOpen(true);
-  };
 
-  const openRestoreDialog = (reg: Registration) => {
-    setSelectedRegistration(reg);
-    setRestoreDialogOpen(true);
-  };
-
-  const submitVerify = async (name: string) => {
-    if (!selectedRegistration) return;
+  const submitVerify = async (registration: Registration) => {
+    if (!currentAdminName) return;
     try {
       const payload = {
-        registration_id: selectedRegistration.id,
+        registration_id: registration.id,
         verified: true,
-        verified_by: name,
+        verified_by: currentAdminName,
         verified_at: new Date().toISOString(),
         restored_by: null,
         restored_at: null,
@@ -189,26 +179,23 @@ const ReportsTab = () => {
         return;
       }
 
-      setVerifications((prev) => ({ ...prev, [selectedRegistration.id]: payload as Verification }));
+      setVerifications((prev) => ({ ...prev, [registration.id]: payload as Verification }));
       toast.success('Verified successfully');
     } catch (err) {
       console.error('Verification failed:', err);
       toast.error('Failed to verify');
-    } finally {
-      setVerifyDialogOpen(false);
-      setSelectedRegistration(null);
     }
   };
 
-  const submitRestore = async (name: string) => {
-    if (!selectedRegistration) return;
+  const submitRestore = async (registration: Registration) => {
+    if (!currentAdminName) return;
     try {
       const payload = {
-        registration_id: selectedRegistration.id,
+        registration_id: registration.id,
         verified: false,
         verified_by: null,
         verified_at: null,
-        restored_by: name,
+        restored_by: currentAdminName,
         restored_at: new Date().toISOString(),
       };
 
@@ -226,14 +213,11 @@ const ReportsTab = () => {
         return;
       }
 
-      setVerifications((prev) => ({ ...prev, [selectedRegistration.id]: payload as Verification }));
+      setVerifications((prev) => ({ ...prev, [registration.id]: payload as Verification }));
       toast.success('Restored successfully');
     } catch (err) {
       console.error('Restore failed:', err);
       toast.error('Failed to restore');
-    } finally {
-      setRestoreDialogOpen(false);
-      setSelectedRegistration(null);
     }
   };
 
@@ -598,16 +582,25 @@ const ReportsTab = () => {
                         {v?.verified ? (
                           <div className="flex items-center gap-2">
                             <Badge variant="secondary">Verified</Badge>
-                            <Button variant="link" size="sm" onClick={() => openRestoreDialog(registration)}>
+                            <span className="text-sm text-muted-foreground">
                               {v.verified_by || 'N/A'} • {verifiedAt ? format(verifiedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={() => openRestoreDialog(registration)}>
-                              Restore
+                            </span>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => submitRestore(registration)}
+                              disabled={!currentAdminName}
+                            >
+                              Restore as {currentAdminName || 'Unknown'}
                             </Button>
                           </div>
                         ) : (
-                          <Button size="sm" onClick={() => openVerifyDialog(registration)}>
-                            Verify
+                          <Button 
+                            size="sm" 
+                            onClick={() => submitVerify(registration)}
+                            disabled={!currentAdminName}
+                          >
+                            Verify as {currentAdminName || 'Unknown'}
                           </Button>
                         )}
                       </TableCell>
@@ -620,23 +613,6 @@ const ReportsTab = () => {
         </CardContent>
       </Card>
 
-      <VerifyDialog
-        open={verifyDialogOpen}
-        onOpenChange={setVerifyDialogOpen}
-        title="Verify registration"
-        description="Confirm final verification for this registration."
-        confirmLabel="Verify"
-        onConfirm={submitVerify}
-      />
-
-      <VerifyDialog
-        open={restoreDialogOpen}
-        onOpenChange={setRestoreDialogOpen}
-        title="Restore (undo verification)"
-        description="This will mark the registration as not verified."
-        confirmLabel="Restore"
-        onConfirm={submitRestore}
-      />
     </div>
   );
 };
