@@ -28,6 +28,7 @@ interface Category {
   offer_fee: number;
   expiry_days: number;
   is_active: boolean;
+  qr_code_url?: string;
 }
 
 const CategoriesTab = () => {
@@ -89,7 +90,7 @@ const CategoriesTab = () => {
     setShowDialog(true);
   };
 
-  const handleEdit = (category: Category) => {
+  const handleEdit = async (category: Category) => {
     setFormData({
       name_english: category.name_english,
       name_malayalam: category.name_malayalam,
@@ -100,7 +101,14 @@ const CategoriesTab = () => {
     });
     setEditingCategory(category);
     setQrFile(null);
-    setQrPreview(null);
+    
+    // Load existing QR image if it exists
+    if (category.qr_code_url) {
+      setQrPreview(category.qr_code_url);
+    } else {
+      setQrPreview(null);
+    }
+    
     setShowDialog(true);
   };
 
@@ -144,7 +152,21 @@ const CategoriesTab = () => {
           if (uploadError) {
             toast.error('Failed to upload QR image');
           } else {
-            toast.success('QR image saved for this category');
+            // Get the public URL and update the database
+            const { data: urlData } = supabase.storage
+              .from(bucket)
+              .getPublicUrl(path);
+            
+            const { error: updateError } = await supabase
+              .from('categories')
+              .update({ qr_code_url: urlData.publicUrl })
+              .eq('id', editingCategory.id);
+              
+            if (updateError) {
+              toast.error('Failed to save QR URL to database');
+            } else {
+              toast.success('QR image saved for this category');
+            }
           }
         }
 
@@ -181,6 +203,20 @@ const CategoriesTab = () => {
 
           if (uploadError) {
             toast.error('Failed to upload QR image');
+          } else {
+            // Get the public URL and update the database
+            const { data: urlData } = supabase.storage
+              .from(bucket)
+              .getPublicUrl(path);
+            
+            const { error: updateError } = await supabase
+              .from('categories')
+              .update({ qr_code_url: urlData.publicUrl })
+              .eq('id', created.id);
+              
+            if (updateError) {
+              toast.error('Failed to save QR URL to database');
+            }
           }
         }
 
@@ -244,81 +280,99 @@ const CategoriesTab = () => {
                 Add Category
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingCategory ? 'Edit Category' : 'Add New Category'}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name_english">English Name *</Label>
-                  <Input
-                    id="name_english"
-                    value={formData.name_english}
-                    onChange={(e) => setFormData({ ...formData, name_english: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="name_malayalam">Malayalam Name *</Label>
-                  <Input
-                    id="name_malayalam"
-                    value={formData.name_malayalam}
-                    onChange={(e) => setFormData({ ...formData, name_malayalam: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="actual_fee">Actual Fee (₹)</Label>
-                    <Input
-                      id="actual_fee"
-                      type="number"
-                      min="0"
-                      value={formData.actual_fee}
-                      onChange={(e) => setFormData({ ...formData, actual_fee: parseFloat(e.target.value) || 0 })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="offer_fee">Offer Fee (₹)</Label>
-                    <Input
-                      id="offer_fee"
-                      type="number"
-                      min="0"
-                      value={formData.offer_fee}
-                      onChange={(e) => setFormData({ ...formData, offer_fee: parseFloat(e.target.value) || 0 })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="expiry_days">Pending Registration Expiry (Days)</Label>
-                  <Input
-                    id="expiry_days"
-                    type="number"
-                    min="1"
-                    value={formData.expiry_days}
-                    onChange={(e) => setFormData({ ...formData, expiry_days: parseInt(e.target.value) || 30 })}
-                  />
-                </div>
-
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Basic Information Section */}
                 <div className="space-y-4">
-                  {editingCategory ? (
+                  <h4 className="text-sm font-medium text-muted-foreground border-b pb-2">Basic Information</h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="payment_qr">Payment QR (image)</Label>
+                      <Label htmlFor="name_english">English Name *</Label>
+                      <Input
+                        id="name_english"
+                        value={formData.name_english}
+                        onChange={(e) => setFormData({ ...formData, name_english: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="name_malayalam">Malayalam Name *</Label>
+                      <Input
+                        id="name_malayalam"
+                        value={formData.name_malayalam}
+                        onChange={(e) => setFormData({ ...formData, name_malayalam: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="min-h-[80px]"
+                    />
+                  </div>
+                </div>
+
+                {/* Pricing & Expiry Section */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium text-muted-foreground border-b pb-2">Pricing & Expiry</h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="actual_fee">Actual Fee (₹)</Label>
+                      <Input
+                        id="actual_fee"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.actual_fee}
+                        onChange={(e) => setFormData({ ...formData, actual_fee: parseFloat(e.target.value) || 0 })}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="offer_fee">Offer Fee (₹)</Label>
+                      <Input
+                        id="offer_fee"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.offer_fee}
+                        onChange={(e) => setFormData({ ...formData, offer_fee: parseFloat(e.target.value) || 0 })}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="expiry_days">Expiry (Days)</Label>
+                      <Input
+                        id="expiry_days"
+                        type="number"
+                        min="1"
+                        value={formData.expiry_days}
+                        onChange={(e) => setFormData({ ...formData, expiry_days: parseInt(e.target.value) || 30 })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment QR Section */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium text-muted-foreground border-b pb-2">Payment QR Code</h4>
+                  
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="payment_qr">Upload QR Image</Label>
                       <Input
                         id="payment_qr"
                         type="file"
@@ -326,30 +380,39 @@ const CategoriesTab = () => {
                         onChange={(e) => {
                           const file = e.target.files?.[0] || null;
                           setQrFile(file);
-                          setQrPreview(file ? URL.createObjectURL(file) : null);
+                          if (file) {
+                            setQrPreview(URL.createObjectURL(file));
+                          }
                         }}
                       />
-                      {qrPreview && (
-                        <img src={qrPreview} alt="QR preview" className="h-32 w-32 object-contain border rounded" />
-                      )}
                       <p className="text-xs text-muted-foreground">
-                        This QR will be shown on Check Status for pending paid registrations in this category.
+                        This QR code will be displayed to users during the payment process for this category.
                       </p>
                     </div>
-                  ) : (
-                    <div className="text-xs text-muted-foreground">
-                      Save the category first, then reopen Edit to upload its QR image.
-                    </div>
-                  )}
-
-                  <div className="flex gap-2">
-                    <Button type="submit" className="flex-1">
-                      {editingCategory ? 'Update' : 'Create'}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
-                      Cancel
-                    </Button>
+                    
+                    {qrPreview && (
+                      <div className="flex justify-center">
+                        <div className="border rounded-lg p-4 bg-muted/30">
+                          <img 
+                            src={qrPreview} 
+                            alt="QR Code Preview" 
+                            className="h-48 w-48 object-contain"
+                          />
+                          <p className="text-xs text-center text-muted-foreground mt-2">QR Code Preview</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button type="submit" className="flex-1">
+                    {editingCategory ? 'Update Category' : 'Create Category'}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
+                    Cancel
+                  </Button>
                 </div>
               </form>
             </DialogContent>

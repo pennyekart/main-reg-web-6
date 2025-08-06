@@ -174,6 +174,7 @@ export type Database = {
           name_english: string
           name_malayalam: string
           offer_fee: number | null
+          qr_code_url: string | null
           updated_at: string
         }
         Insert: {
@@ -186,6 +187,7 @@ export type Database = {
           name_english: string
           name_malayalam: string
           offer_fee?: number | null
+          qr_code_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -198,6 +200,7 @@ export type Database = {
           name_english?: string
           name_malayalam?: string
           offer_fee?: number | null
+          qr_code_url?: string | null
           updated_at?: string
         }
         Relationships: []
