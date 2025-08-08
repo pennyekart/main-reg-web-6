@@ -309,6 +309,7 @@ const CategoriesTab = () => {
                         value={formData.name_malayalam}
                         onChange={(e) => setFormData({ ...formData, name_malayalam: e.target.value })}
                         required
+                        className="font-malayalam"
                       />
                     </div>
                   </div>
@@ -435,7 +436,7 @@ const CategoriesTab = () => {
                         <h3 className={`font-semibold text-category-${colorVariant}-foreground mb-1`}>
                           {category.name_english}
                         </h3>
-                        <p className={`text-sm text-category-${colorVariant}-foreground/80`}>
+                        <p className={`text-sm text-category-${colorVariant}-foreground/80 font-malayalam`}>
                           {category.name_malayalam}
                         </p>
                       </div>

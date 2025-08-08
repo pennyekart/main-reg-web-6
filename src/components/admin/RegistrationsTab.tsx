@@ -306,14 +306,14 @@ const RegistrationsTab = () => {
                     <TableCell>
                       <div className="text-sm">
                         <div>{reg.categories?.name_english}</div>
-                        <div className="text-muted-foreground">{reg.categories?.name_malayalam}</div>
+                        <div className="text-muted-foreground font-malayalam">{reg.categories?.name_malayalam}</div>
                       </div>
                     </TableCell>
                     <TableCell>
                       {reg.preference_categories ? (
                         <div className="text-sm">
                           <div>{reg.preference_categories.name_english}</div>
-                          <div className="text-muted-foreground">{reg.preference_categories.name_malayalam}</div>
+                          <div className="text-muted-foreground font-malayalam">{reg.preference_categories.name_malayalam}</div>
                         </div>
                       ) : '-'}
                     </TableCell>

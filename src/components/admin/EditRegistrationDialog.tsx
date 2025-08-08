@@ -222,7 +222,7 @@ const EditRegistrationDialog = ({ registration, isOpen, onClose, onSuccess }: Ed
                 <SelectContent>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
-                      {category.name_english} / {category.name_malayalam}
+                      {category.name_english} / <span className="font-malayalam">{category.name_malayalam}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -256,7 +256,7 @@ const EditRegistrationDialog = ({ registration, isOpen, onClose, onSuccess }: Ed
                 <SelectItem value="">None</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
-                    {category.name_english} / {category.name_malayalam}
+                    {category.name_english} / <span className="font-malayalam">{category.name_malayalam}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
