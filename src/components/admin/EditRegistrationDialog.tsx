@@ -85,8 +85,8 @@ const EditRegistrationDialog = ({ registration, isOpen, onClose, onSuccess }: Ed
         ward: registration.ward,
         agent: registration.agent || '',
         category_id: registration.category_id,
-        preference_category_id: registration.preference_category_id || '',
-        panchayath_id: registration.panchayath_id || '',
+        preference_category_id: registration.preference_category_id || 'none',
+        panchayath_id: registration.panchayath_id || 'none',
         fee: registration.fee
       });
     }
@@ -144,8 +144,8 @@ const EditRegistrationDialog = ({ registration, isOpen, onClose, onSuccess }: Ed
         ward: formData.ward,
         agent: formData.agent || null,
         category_id: formData.category_id,
-        preference_category_id: formData.preference_category_id || null,
-        panchayath_id: formData.panchayath_id || null,
+        preference_category_id: formData.preference_category_id === 'none' ? null : formData.preference_category_id || null,
+        panchayath_id: formData.panchayath_id === 'none' ? null : formData.panchayath_id || null,
         fee: formData.fee
       };
 
@@ -253,6 +253,7 @@ const EditRegistrationDialog = ({ registration, isOpen, onClose, onSuccess }: Ed
                   <SelectValue placeholder="Select Panchayath" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
                   {panchayaths.map((panchayath) => (
                     <SelectItem key={panchayath.id} value={panchayath.id}>
                       {panchayath.name} - {panchayath.district}
@@ -270,7 +271,7 @@ const EditRegistrationDialog = ({ registration, isOpen, onClose, onSuccess }: Ed
                 <SelectValue placeholder="Select Preference" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name_english} / <span className="font-malayalam">{category.name_malayalam}</span>
