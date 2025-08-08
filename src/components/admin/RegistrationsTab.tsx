@@ -111,13 +111,25 @@ const RegistrationsTab = () => {
 
   const updateRegistrationStatus = async (id: string, status: string) => {
     try {
-      const updateData: any = { 
+      let updateData: any = { 
         status,
         ...(status === 'approved' && {
           approved_date: new Date().toISOString(),
           approved_by: 'eva' // Admin username
         })
       };
+
+      // If approving and no expiry date exists, calculate it from category
+      if (status === 'approved') {
+        const registration = registrations.find(r => r.id === id);
+        if (registration && !registration.expiry_date) {
+          const category = categories.find(c => c.id === registration.category_id);
+          const expiryDays = category?.expiry_days || 30;
+          const expiryDate = new Date();
+          expiryDate.setDate(expiryDate.getDate() + expiryDays);
+          updateData.expiry_date = expiryDate.toISOString();
+        }
+      }
 
       const { error } = await supabase
         .from('registrations')
