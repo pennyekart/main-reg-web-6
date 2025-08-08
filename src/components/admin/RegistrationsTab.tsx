@@ -358,7 +358,11 @@ const RegistrationsTab = () => {
                     </TableCell>
                     <TableCell>{reg.approved_by || '-'}</TableCell>
                     <TableCell>
-                      {reg.expiry_date ? (
+                      {reg.status === 'approved' ? (
+                        <Badge className="bg-green-100 text-green-800">
+                          Approved
+                        </Badge>
+                      ) : reg.expiry_date ? (
                         <div className="text-sm">
                           <div>{format(new Date(reg.expiry_date), 'dd/MM/yyyy')}</div>
                           <div className="text-muted-foreground">
