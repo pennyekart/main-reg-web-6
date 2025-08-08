@@ -20,6 +20,23 @@ interface Registration {
   preference_category_id?: string;
   panchayath_id?: string;
   fee: number;
+  status: string;
+  created_at: string;
+  approved_date: string;
+  approved_by: string;
+  expiry_date: string;
+  categories: {
+    name_english: string;
+    name_malayalam: string;
+  };
+  preference_categories?: {
+    name_english: string;
+    name_malayalam: string;
+  };
+  panchayaths?: {
+    name: string;
+    district: string;
+  };
 }
 
 interface Category {

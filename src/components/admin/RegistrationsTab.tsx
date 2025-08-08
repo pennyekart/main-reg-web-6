@@ -53,6 +53,7 @@ const RegistrationsTab = () => {
   const [panchayathFilter, setPanchayathFilter] = useState('all');
   const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [expiryFilter, setExpiryFilter] = useState('');
 
   useEffect(() => {
     fetchRegistrations();
@@ -209,8 +210,13 @@ const RegistrationsTab = () => {
     const matchesStatus = statusFilter === 'all' || reg.status === statusFilter;
     const matchesCategory = categoryFilter === 'all' || reg.categories?.name_english === categoryFilter;
     const matchesPanchayath = panchayathFilter === 'all' || reg.panchayaths?.name === panchayathFilter;
+    
+    const matchesExpiry = expiryFilter === '' || (() => {
+      const daysLeft = Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      return daysLeft <= parseInt(expiryFilter) && daysLeft >= 0;
+    })();
 
-    return matchesSearch && matchesStatus && matchesCategory && matchesPanchayath;
+    return matchesSearch && matchesStatus && matchesCategory && matchesPanchayath && matchesExpiry;
   });
 
   return (
@@ -267,6 +273,15 @@ const RegistrationsTab = () => {
               ))}
             </SelectContent>
           </Select>
+
+          <Input
+            placeholder="Expires within days"
+            value={expiryFilter}
+            onChange={(e) => setExpiryFilter(e.target.value)}
+            className="w-40"
+            type="number"
+            min="0"
+          />
 
           <Button variant="outline">
             <FileDown className="w-4 h-4 mr-2" />
