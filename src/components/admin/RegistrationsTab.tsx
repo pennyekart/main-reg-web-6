@@ -346,12 +346,16 @@ const RegistrationsTab = () => {
                     </TableCell>
                     <TableCell>{reg.approved_by || '-'}</TableCell>
                     <TableCell>
-                      <div className="text-sm">
-                        <div>{format(new Date(reg.expiry_date), 'dd/MM/yyyy')}</div>
-                        <div className="text-muted-foreground">
-                          {Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days left
+                      {reg.expiry_date ? (
+                        <div className="text-sm">
+                          <div>{format(new Date(reg.expiry_date), 'dd/MM/yyyy')}</div>
+                          <div className="text-muted-foreground">
+                            {Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days left
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">No expiry date</div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
