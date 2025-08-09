@@ -11,6 +11,7 @@ import AnnouncementsTab from '@/components/admin/AnnouncementsTab';
 import UtilitiesTab from '@/components/admin/UtilitiesTab';
 import AccountsTab from '@/components/admin/AccountsTab';
 import ReportsTab from '@/components/admin/ReportsTab';
+import AdminUsersTab from '@/components/admin/AdminUsersTab';
 import NotificationBell from '@/components/admin/NotificationBell';
 
 const AdminPanel = () => {
@@ -48,7 +49,7 @@ const AdminPanel = () => {
         
         <Tabs defaultValue="registrations" className="w-full">
           <div className="overflow-x-auto">
-            <TabsList className="flex w-max sm:grid sm:w-full sm:grid-cols-4 lg:grid-cols-7 h-auto p-1">
+            <TabsList className="flex w-max sm:grid sm:w-full sm:grid-cols-4 lg:grid-cols-8 h-auto p-1">
               <TabsTrigger value="registrations" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
                 Registrations
               </TabsTrigger>
@@ -69,6 +70,9 @@ const AdminPanel = () => {
               </TabsTrigger>
               <TabsTrigger value="reports" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
                 Reports
+              </TabsTrigger>
+              <TabsTrigger value="admin-users" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                Admin Users
               </TabsTrigger>
             </TabsList>
           </div>
@@ -99,6 +103,10 @@ const AdminPanel = () => {
           
           <TabsContent value="reports">
             <ReportsTab />
+          </TabsContent>
+          
+          <TabsContent value="admin-users">
+            <AdminUsersTab />
           </TabsContent>
         </Tabs>
       </div>
