@@ -310,76 +310,88 @@ const RegistrationsTab = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Customer ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Mobile</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Preference</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Fee</TableHead>
-                  <TableHead>Reg. Date</TableHead>
-                  <TableHead>Approved Date</TableHead>
-                  <TableHead>Approved By</TableHead>
-                  <TableHead>Expiry</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="w-32">Customer ID</TableHead>
+                  <TableHead className="w-40">Name & Contact</TableHead>
+                  <TableHead className="w-48">Category</TableHead>
+                  <TableHead className="w-24">Status</TableHead>
+                  <TableHead className="w-20">Fee</TableHead>
+                  <TableHead className="w-32">Dates</TableHead>
+                  <TableHead className="w-32">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredRegistrations.map((reg) => (
                   <TableRow key={reg.id}>
-                    <TableCell className="font-medium">{reg.customer_id}</TableCell>
-                    <TableCell>{reg.full_name}</TableCell>
-                    <TableCell>{reg.mobile_number}</TableCell>
+                    <TableCell className="font-medium font-mono text-xs">{reg.customer_id}</TableCell>
                     <TableCell>
-                      <div className="text-sm">
-                        <div>{reg.categories?.name_english}</div>
-                        <div className="text-muted-foreground font-malayalam">{reg.categories?.name_malayalam}</div>
+                      <div className="space-y-1">
+                        <div className="font-medium text-sm">{reg.full_name}</div>
+                        <div className="text-xs text-muted-foreground">{reg.mobile_number}</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-32" title={reg.address}>
+                          {reg.address}
+                        </div>
+                        {reg.panchayaths && (
+                          <div className="text-xs text-muted-foreground">
+                            {reg.panchayaths.name}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      {reg.preference_categories ? (
+                      <div className="space-y-2">
                         <div className="text-sm">
-                          <div>{reg.preference_categories.name_english}</div>
-                          <div className="text-muted-foreground font-malayalam">{reg.preference_categories.name_malayalam}</div>
+                          <div className="font-medium">{reg.categories?.name_english}</div>
+                          <div className="text-xs text-muted-foreground font-malayalam">{reg.categories?.name_malayalam}</div>
                         </div>
-                      ) : '-'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusBadgeColor(reg.status)}>
-                        {reg.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>₹{reg.fee}</TableCell>
-                    <TableCell>
-                      {format(new Date(reg.created_at), 'dd/MM/yyyy')}
-                    </TableCell>
-                    <TableCell>
-                      {reg.approved_date ? format(new Date(reg.approved_date), 'dd/MM/yyyy') : '-'}
-                    </TableCell>
-                    <TableCell>{reg.approved_by || '-'}</TableCell>
-                    <TableCell>
-                      {reg.status === 'approved' ? (
-                        <Badge className="bg-green-100 text-green-800">
-                          Approved
-                        </Badge>
-                      ) : reg.expiry_date ? (
-                        <div className="text-sm">
-                          <div>{format(new Date(reg.expiry_date), 'dd/MM/yyyy')}</div>
-                          <div className="text-muted-foreground">
-                            {Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days left
+                        {reg.preference_categories && (
+                          <div className="text-xs border-t pt-1">
+                            <div className="text-muted-foreground">Preference:</div>
+                            <div>{reg.preference_categories.name_english}</div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="text-sm text-muted-foreground">No expiry date</div>
-                      )}
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
+                      <div className="space-y-1">
+                        <Badge className={getStatusBadgeColor(reg.status)}>
+                          {reg.status}
+                        </Badge>
+                        {reg.approved_by && (
+                          <div className="text-xs text-muted-foreground">
+                            by {reg.approved_by}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm font-medium">₹{reg.fee}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1 text-xs">
+                        <div>
+                          <span className="text-muted-foreground">Reg:</span> {format(new Date(reg.created_at), 'dd/MM/yy')}
+                        </div>
+                        {reg.approved_date && (
+                          <div>
+                            <span className="text-muted-foreground">App:</span> {format(new Date(reg.approved_date), 'dd/MM/yy')}
+                          </div>
+                        )}
+                        {reg.expiry_date && (
+                          <div className={Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) <= 30 ? 'text-orange-600' : 'text-muted-foreground'}>
+                            <span>Exp:</span> {format(new Date(reg.expiry_date), 'dd/MM/yy')}
+                            <div className="text-xs">
+                              ({Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}d)
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleEditRegistration(reg)}
                           title="Edit Registration"
+                          className="h-7 w-7 p-0"
                         >
                           <Edit className="w-3 h-3" />
                         </Button>
@@ -391,6 +403,7 @@ const RegistrationsTab = () => {
                               variant="outline"
                               onClick={() => updateRegistrationStatus(reg.id, 'approved')}
                               title="Approve"
+                              className="h-7 w-7 p-0 text-green-600"
                             >
                               <Check className="w-3 h-3" />
                             </Button>
@@ -399,6 +412,7 @@ const RegistrationsTab = () => {
                               variant="outline"
                               onClick={() => updateRegistrationStatus(reg.id, 'rejected')}
                               title="Reject"
+                              className="h-7 w-7 p-0 text-red-600"
                             >
                               <X className="w-3 h-3" />
                             </Button>
@@ -411,6 +425,7 @@ const RegistrationsTab = () => {
                             variant="outline"
                             onClick={() => restoreRegistration(reg.id)}
                             title="Restore to Pending"
+                            className="h-7 w-7 p-0 text-blue-600"
                           >
                             <RotateCcw className="w-3 h-3" />
                           </Button>
@@ -421,6 +436,7 @@ const RegistrationsTab = () => {
                           variant="outline"
                           onClick={() => deleteRegistration(reg.id)}
                           title="Delete"
+                          className="h-7 w-7 p-0 text-red-600"
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>
