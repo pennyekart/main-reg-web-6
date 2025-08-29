@@ -311,7 +311,7 @@ const RegistrationsTab = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-20">ID</TableHead>
-                  <TableHead className="w-32">Name & Contact</TableHead>
+                  <TableHead className="w-28">Name & Contact</TableHead>
                   <TableHead className="w-36">Category</TableHead>
                   <TableHead className="w-20">Status</TableHead>
                   <TableHead className="w-16">Fee</TableHead>
