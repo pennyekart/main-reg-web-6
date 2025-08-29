@@ -52,46 +52,67 @@ const Categories = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((category) => (
-            <Card key={category.id} className="hover:shadow-lg transition-shadow border-2 hover:border-primary">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  <div>{category.name_english}</div>
-                  <div className="text-base font-normal text-muted-foreground mt-1">
-                    {category.name_malayalam}
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {category.description && (
-                  <p className="text-muted-foreground mb-4">{category.description}</p>
-                )}
-                
-                {(category.actual_fee > 0 || category.offer_fee > 0) && (
-                  <div className="mb-4">
-                    {category.actual_fee > 0 && category.offer_fee > 0 && category.offer_fee < category.actual_fee ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-green-600">₹{category.offer_fee}</span>
-                        <span className="text-sm line-through text-muted-foreground">₹{category.actual_fee}</span>
-                      </div>
-                    ) : category.actual_fee > 0 ? (
-                      <span className="text-lg font-bold">₹{category.actual_fee}</span>
-                    ) : (
-                      <span className="text-lg font-bold text-green-600">Free</span>
-                    )}
-                  </div>
-                )}
+          {categories.map((category, index) => {
+            const isJobCard = category.name_english.toLowerCase().includes('job card');
+            const colorClasses = [
+              'bg-category-blue border-category-blue-foreground text-category-blue-foreground',
+              'bg-category-green border-category-green-foreground text-category-green-foreground', 
+              'bg-category-purple border-category-purple-foreground text-category-purple-foreground',
+              'bg-category-orange border-category-orange-foreground text-category-orange-foreground',
+              'bg-category-pink border-category-pink-foreground text-category-pink-foreground',
+              'bg-category-indigo border-category-indigo-foreground text-category-indigo-foreground'
+            ];
+            const colorClass = colorClasses[index % colorClasses.length];
+            
+            return (
+              <Card 
+                key={category.id} 
+                className={`hover:shadow-xl transition-all duration-300 border-2 hover:scale-105 ${
+                  isJobCard 
+                    ? 'golden-glitter text-gold-dark border-gold hover:border-gold-dark shadow-lg' 
+                    : `${colorClass} hover:shadow-lg`
+                }`}
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg">
+                    <div className={isJobCard ? 'font-bold text-gold-dark' : ''}>{category.name_english}</div>
+                    <div className={`text-base font-normal mt-1 ${isJobCard ? 'text-gold-dark/80' : 'opacity-80'}`}>
+                      {category.name_malayalam}
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {category.description && (
+                    <p className={`mb-4 ${isJobCard ? 'text-gold-dark/90' : 'opacity-90'}`}>{category.description}</p>
+                  )}
+                  
+                  {(category.actual_fee > 0 || category.offer_fee > 0) && (
+                    <div className="mb-4">
+                      {category.actual_fee > 0 && category.offer_fee > 0 && category.offer_fee < category.actual_fee ? (
+                        <div className="flex items-center gap-2">
+                          <span className={`text-lg font-bold ${isJobCard ? 'text-gold-dark' : 'text-green-600'}`}>₹{category.offer_fee}</span>
+                          <span className={`text-sm line-through ${isJobCard ? 'text-gold-dark/60' : 'opacity-60'}`}>₹{category.actual_fee}</span>
+                        </div>
+                      ) : category.actual_fee > 0 ? (
+                        <span className={`text-lg font-bold ${isJobCard ? 'text-gold-dark' : ''}`}>₹{category.actual_fee}</span>
+                      ) : (
+                        <span className={`text-lg font-bold ${isJobCard ? 'text-gold-dark' : 'text-green-600'}`}>Free</span>
+                      )}
+                    </div>
+                  )}
 
-                <Button 
-                  onClick={() => handleRegisterClick(category)}
-                  className="w-full"
-                  size="lg"
-                >
-                  രജിസ്റ്റർ ചെയ്യുക
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  <Button 
+                    onClick={() => handleRegisterClick(category)}
+                    className={`w-full ${isJobCard ? 'bg-gold hover:bg-gold-dark text-gold-dark hover:text-gold-light border-gold-dark' : ''}`}
+                    size="lg"
+                    variant={isJobCard ? 'outline' : 'default'}
+                  >
+                    രജിസ്റ്റർ ചെയ്യുക
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
 

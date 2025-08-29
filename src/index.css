@@ -67,6 +67,11 @@ All colors MUST be HSL.
     --category-pink-foreground: 340 91% 30%;
     --category-indigo: 250 100% 92%;
     --category-indigo-foreground: 250 91% 28%;
+    
+    /* Golden glitter for job card */
+    --gold: 45 100% 51%;
+    --gold-light: 48 100% 88%;
+    --gold-dark: 42 78% 25%;
   }
 
   .dark {
@@ -119,6 +124,11 @@ All colors MUST be HSL.
     --category-pink-foreground: 340 100% 82%;
     --category-indigo: 250 70% 20%;
     --category-indigo-foreground: 250 100% 80%;
+    
+    /* Golden glitter for job card - dark mode */
+    --gold: 45 100% 51%;
+    --gold-light: 45 60% 25%;
+    --gold-dark: 48 100% 70%;
   }
 }
 
@@ -129,5 +139,46 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Golden glitter animation */
+  .golden-glitter {
+    background: linear-gradient(135deg, 
+      hsl(var(--gold-light)) 0%, 
+      hsl(var(--gold)) 25%, 
+      hsl(var(--gold-light)) 50%, 
+      hsl(var(--gold)) 75%, 
+      hsl(var(--gold-light)) 100%);
+    background-size: 200% 200%;
+    animation: glitter 3s ease-in-out infinite;
+    position: relative;
+  }
+  
+  .golden-glitter::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+      transparent 30%, 
+      rgba(255, 255, 255, 0.5) 50%, 
+      transparent 70%);
+    background-size: 20px 20px;
+    animation: sparkle 2s linear infinite;
+    border-radius: inherit;
+  }
+  
+  @keyframes glitter {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  
+  @keyframes sparkle {
+    0% { background-position: 0 0; }
+    100% { background-position: 20px 20px; }
   }
 }
