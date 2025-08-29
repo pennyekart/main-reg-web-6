@@ -310,13 +310,13 @@ const RegistrationsTab = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-32">Customer ID</TableHead>
-                  <TableHead className="w-40">Name & Contact</TableHead>
-                  <TableHead className="w-48">Category</TableHead>
-                  <TableHead className="w-24">Status</TableHead>
-                  <TableHead className="w-20">Fee</TableHead>
-                  <TableHead className="w-32">Dates</TableHead>
-                  <TableHead className="w-32">Actions</TableHead>
+                  <TableHead className="w-20">ID</TableHead>
+                  <TableHead className="w-32">Name & Contact</TableHead>
+                  <TableHead className="w-36">Category</TableHead>
+                  <TableHead className="w-20">Status</TableHead>
+                  <TableHead className="w-16">Fee</TableHead>
+                  <TableHead className="w-24">Dates</TableHead>
+                  <TableHead className="w-24">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
