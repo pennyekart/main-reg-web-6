@@ -67,10 +67,10 @@ const Categories = () => {
             return (
               <Card 
                 key={category.id} 
-                className={`hover:shadow-xl transition-all duration-300 border-2 hover:scale-105 ${
+                className={`border-2 ${
                   isJobCard 
-                    ? 'golden-glitter text-gold-dark border-gold hover:border-gold-dark shadow-lg' 
-                    : `${colorClass} hover:shadow-lg`
+                    ? 'golden-glitter golden-hover text-gold-dark border-gold shadow-lg' 
+                    : `glass-card category-hover ${colorClass}`
                 }`}
               >
                 <CardHeader>
@@ -103,7 +103,11 @@ const Categories = () => {
 
                   <Button 
                     onClick={() => handleRegisterClick(category)}
-                    className={`w-full ${isJobCard ? 'bg-gold hover:bg-gold-dark text-gold-dark hover:text-gold-light border-gold-dark' : ''}`}
+                    className={`w-full transition-all duration-300 ${
+                      isJobCard 
+                        ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-yellow-900 hover:text-yellow-100 border-yellow-500 shadow-lg hover:shadow-xl transform hover:scale-105' 
+                        : 'hover:transform hover:scale-105'
+                    }`}
                     size="lg"
                     variant={isJobCard ? 'outline' : 'default'}
                   >

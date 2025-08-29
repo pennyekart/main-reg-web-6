@@ -143,17 +143,39 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  /* Golden glitter animation */
+  /* Glassmorphism effect for categories */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+  
+  .glass-card-dark {
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  /* Golden glitter animation with glassmorphism */
   .golden-glitter {
     background: linear-gradient(135deg, 
-      hsl(var(--gold-light)) 0%, 
-      hsl(var(--gold)) 25%, 
-      hsl(var(--gold-light)) 50%, 
-      hsl(var(--gold)) 75%, 
-      hsl(var(--gold-light)) 100%);
+      rgba(255, 215, 0, 0.3) 0%, 
+      rgba(255, 223, 0, 0.5) 25%, 
+      rgba(255, 215, 0, 0.3) 50%, 
+      rgba(255, 223, 0, 0.5) 75%, 
+      rgba(255, 215, 0, 0.3) 100%);
     background-size: 200% 200%;
     animation: glitter 3s ease-in-out infinite;
     position: relative;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 215, 0, 0.6);
+    box-shadow: 0 8px 32px 0 rgba(255, 215, 0, 0.3), 
+                inset 0 2px 4px 0 rgba(255, 255, 255, 0.3);
   }
   
   .golden-glitter::before {
@@ -165,11 +187,46 @@ All colors MUST be HSL.
     bottom: 0;
     background: linear-gradient(45deg, 
       transparent 30%, 
-      rgba(255, 255, 255, 0.5) 50%, 
+      rgba(255, 255, 255, 0.7) 50%, 
       transparent 70%);
     background-size: 20px 20px;
     animation: sparkle 2s linear infinite;
     border-radius: inherit;
+    pointer-events: none;
+  }
+  
+  .golden-glitter::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+      rgba(255, 215, 0, 0.8),
+      rgba(255, 223, 0, 0.6),
+      rgba(255, 215, 0, 0.8));
+    background-size: 400% 400%;
+    animation: golden-border 4s ease-in-out infinite;
+    border-radius: inherit;
+    z-index: -1;
+  }
+  
+  /* Enhanced hover effects */
+  .category-hover {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .category-hover:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 20px 40px 0 rgba(0, 0, 0, 0.15);
+  }
+  
+  .golden-hover:hover {
+    transform: translateY(-10px) scale(1.08);
+    box-shadow: 0 25px 50px 0 rgba(255, 215, 0, 0.4),
+                0 0 30px 0 rgba(255, 215, 0, 0.6);
+    animation: golden-pulse 1.5s ease-in-out infinite;
   }
   
   @keyframes glitter {
@@ -180,5 +237,23 @@ All colors MUST be HSL.
   @keyframes sparkle {
     0% { background-position: 0 0; }
     100% { background-position: 20px 20px; }
+  }
+  
+  @keyframes golden-border {
+    0%, 100% { background-position: 0% 50%; }
+    25% { background-position: 100% 50%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 0% 100%; }
+  }
+  
+  @keyframes golden-pulse {
+    0%, 100% { 
+      box-shadow: 0 25px 50px 0 rgba(255, 215, 0, 0.4),
+                  0 0 30px 0 rgba(255, 215, 0, 0.6);
+    }
+    50% { 
+      box-shadow: 0 25px 50px 0 rgba(255, 215, 0, 0.6),
+                  0 0 40px 0 rgba(255, 215, 0, 0.8);
+    }
   }
 }
