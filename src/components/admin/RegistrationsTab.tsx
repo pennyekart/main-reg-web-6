@@ -213,6 +213,59 @@ const RegistrationsTab = () => {
     }
   };
 
+  const getCategoryColor = (categoryName: string) => {
+    const isJobCard = categoryName.toLowerCase().includes('job card');
+    if (isJobCard) {
+      return {
+        bg: 'bg-gradient-to-r from-yellow-100 to-yellow-200',
+        text: 'text-yellow-900',
+        badge: 'bg-yellow-500 text-white',
+        border: 'border-l-4 border-yellow-500'
+      };
+    }
+    
+    const colorIndex = Math.abs(categoryName.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % 6;
+    const colors = [
+      {
+        bg: 'bg-gradient-to-r from-blue-50 to-blue-100',
+        text: 'text-blue-900',
+        badge: 'bg-blue-500 text-white',
+        border: 'border-l-4 border-blue-500'
+      },
+      {
+        bg: 'bg-gradient-to-r from-green-50 to-green-100',
+        text: 'text-green-900',
+        badge: 'bg-green-500 text-white',
+        border: 'border-l-4 border-green-500'
+      },
+      {
+        bg: 'bg-gradient-to-r from-purple-50 to-purple-100',
+        text: 'text-purple-900',
+        badge: 'bg-purple-500 text-white',
+        border: 'border-l-4 border-purple-500'
+      },
+      {
+        bg: 'bg-gradient-to-r from-orange-50 to-orange-100',
+        text: 'text-orange-900',
+        badge: 'bg-orange-500 text-white',
+        border: 'border-l-4 border-orange-500'
+      },
+      {
+        bg: 'bg-gradient-to-r from-pink-50 to-pink-100',
+        text: 'text-pink-900',
+        badge: 'bg-pink-500 text-white',
+        border: 'border-l-4 border-pink-500'
+      },
+      {
+        bg: 'bg-gradient-to-r from-indigo-50 to-indigo-100',
+        text: 'text-indigo-900',
+        badge: 'bg-indigo-500 text-white',
+        border: 'border-l-4 border-indigo-500'
+      }
+    ];
+    return colors[colorIndex];
+  };
+
   const filteredRegistrations = registrations.filter(reg => {
     const matchesSearch = searchQuery === '' || 
       reg.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -320,130 +373,137 @@ const RegistrationsTab = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRegistrations.map((reg) => (
-                  <TableRow key={reg.id}>
-                    <TableCell className="font-medium font-mono text-xs">{reg.customer_id}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-medium text-sm">{reg.full_name}</div>
-                        <div className="text-xs text-muted-foreground">{reg.mobile_number}</div>
-                        <div className="text-xs text-muted-foreground truncate max-w-32" title={reg.address}>
-                          {reg.address}
+                {filteredRegistrations.map((reg) => {
+                  const categoryColor = getCategoryColor(reg.categories?.name_english || '');
+                  return (
+                    <TableRow key={reg.id} className={`${categoryColor.bg} ${categoryColor.border} hover:opacity-80 transition-opacity`}>
+                      <TableCell className="font-medium font-mono text-xs">{reg.customer_id}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-medium text-sm">{reg.full_name}</div>
+                          <div className="text-xs text-muted-foreground">{reg.mobile_number}</div>
+                          <div className="text-xs text-muted-foreground truncate max-w-32" title={reg.address}>
+                            {reg.address}
+                          </div>
+                          {reg.panchayaths && (
+                            <div className="text-xs text-muted-foreground">
+                              {reg.panchayaths.name}
+                            </div>
+                          )}
                         </div>
-                        {reg.panchayaths && (
-                          <div className="text-xs text-muted-foreground">
-                            {reg.panchayaths.name}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-2">
-                        <div className="text-sm">
-                          <div className="font-medium">{reg.categories?.name_english}</div>
-                          <div className="text-xs text-muted-foreground font-malayalam">{reg.categories?.name_malayalam}</div>
-                        </div>
-                        {reg.preference_categories && (
-                          <div className="text-xs border-t pt-1">
-                            <div className="text-muted-foreground">Preference:</div>
-                            <div>{reg.preference_categories.name_english}</div>
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <Badge className={getStatusBadgeColor(reg.status)}>
-                          {reg.status}
-                        </Badge>
-                        {reg.approved_by && (
-                          <div className="text-xs text-muted-foreground">
-                            by {reg.approved_by}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm font-medium">₹{reg.fee}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1 text-xs">
-                        <div>
-                          <span className="text-muted-foreground">Reg:</span> {format(new Date(reg.created_at), 'dd/MM/yy')}
-                        </div>
-                        {reg.approved_date && (
-                          <div>
-                            <span className="text-muted-foreground">App:</span> {format(new Date(reg.approved_date), 'dd/MM/yy')}
-                          </div>
-                        )}
-                        {reg.expiry_date && (
-                          <div className={Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) <= 30 ? 'text-orange-600' : 'text-muted-foreground'}>
-                            <span>Exp:</span> {format(new Date(reg.expiry_date), 'dd/MM/yy')}
-                            <div className="text-xs">
-                              ({Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}d)
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-2">
+                          <div className="text-sm">
+                            <Badge className={`${categoryColor.badge} font-bold`}>
+                              {reg.categories?.name_english}
+                            </Badge>
+                            <div className={`text-xs mt-1 font-malayalam ${categoryColor.text}`}>
+                              {reg.categories?.name_malayalam}
                             </div>
                           </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditRegistration(reg)}
-                          title="Edit Registration"
-                          className="h-7 w-7 p-0"
-                        >
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                        
-                        {reg.status === 'pending' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateRegistrationStatus(reg.id, 'approved')}
-                              title="Approve"
-                              className="h-7 w-7 p-0 text-green-600"
-                            >
-                              <Check className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateRegistrationStatus(reg.id, 'rejected')}
-                              title="Reject"
-                              className="h-7 w-7 p-0 text-red-600"
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </>
-                        )}
-                        
-                        {(reg.status === 'approved' || reg.status === 'rejected') && (
+                          {reg.preference_categories && (
+                            <div className="text-xs border-t pt-1">
+                              <div className="text-muted-foreground">Preference:</div>
+                              <div className={categoryColor.text}>{reg.preference_categories.name_english}</div>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <Badge className={getStatusBadgeColor(reg.status)}>
+                            {reg.status}
+                          </Badge>
+                          {reg.approved_by && (
+                            <div className="text-xs text-muted-foreground">
+                              by {reg.approved_by}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm font-medium">₹{reg.fee}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1 text-xs">
+                          <div>
+                            <span className="text-muted-foreground">Reg:</span> {format(new Date(reg.created_at), 'dd/MM/yy')}
+                          </div>
+                          {reg.approved_date && (
+                            <div>
+                              <span className="text-muted-foreground">App:</span> {format(new Date(reg.approved_date), 'dd/MM/yy')}
+                            </div>
+                          )}
+                          {reg.expiry_date && (
+                            <div className={Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) <= 30 ? 'text-orange-600' : 'text-muted-foreground'}>
+                              <span>Exp:</span> {format(new Date(reg.expiry_date), 'dd/MM/yy')}
+                              <div className="text-xs">
+                                ({Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}d)
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => restoreRegistration(reg.id)}
-                            title="Restore to Pending"
-                            className="h-7 w-7 p-0 text-blue-600"
+                            onClick={() => handleEditRegistration(reg)}
+                            title="Edit Registration"
+                            className="h-7 w-7 p-0"
                           >
-                            <RotateCcw className="w-3 h-3" />
+                            <Edit className="w-3 h-3" />
                           </Button>
-                        )}
-                        
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => deleteRegistration(reg.id)}
-                          title="Delete"
-                          className="h-7 w-7 p-0 text-red-600"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          
+                          {reg.status === 'pending' && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateRegistrationStatus(reg.id, 'approved')}
+                                title="Approve"
+                                className="h-7 w-7 p-0 text-green-600"
+                              >
+                                <Check className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateRegistrationStatus(reg.id, 'rejected')}
+                                title="Reject"
+                                className="h-7 w-7 p-0 text-red-600"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </>
+                          )}
+                          
+                          {(reg.status === 'approved' || reg.status === 'rejected') && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => restoreRegistration(reg.id)}
+                              title="Restore to Pending"
+                              className="h-7 w-7 p-0 text-blue-600"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                            </Button>
+                          )}
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => deleteRegistration(reg.id)}
+                            title="Delete"
+                            className="h-7 w-7 p-0 text-red-600"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
