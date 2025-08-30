@@ -213,6 +213,16 @@ const RegistrationsTab = () => {
     }
   };
 
+  const isRegistrationExpired = (expiryDate: string | null): boolean => {
+    if (!expiryDate) return false;
+    return new Date(expiryDate) < new Date();
+  };
+
+  const getDaysRemaining = (expiryDate: string | null): number => {
+    if (!expiryDate) return Infinity;
+    return Math.ceil((new Date(expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+  };
+
   const getCategoryColor = (categoryName: string) => {
     const isJobCard = categoryName.toLowerCase().includes('job card');
     if (isJobCard) {
@@ -375,8 +385,16 @@ const RegistrationsTab = () => {
               <TableBody>
                 {filteredRegistrations.map((reg) => {
                   const categoryColor = getCategoryColor(reg.categories?.name_english || '');
+                  const isExpired = isRegistrationExpired(reg.expiry_date);
+                  const daysRemaining = getDaysRemaining(reg.expiry_date);
+                  
+                  // Override styling for expired registrations
+                  const rowClassName = isExpired 
+                    ? 'bg-red-50 border-l-4 border-red-500 hover:bg-red-100 transition-colors'
+                    : `${categoryColor.bg} ${categoryColor.border} hover:opacity-80 transition-opacity`;
+                  
                   return (
-                    <TableRow key={reg.id} className={`${categoryColor.bg} ${categoryColor.border} hover:opacity-80 transition-opacity`}>
+                    <TableRow key={reg.id} className={rowClassName}>
                        <TableCell className="font-medium font-mono text-xs truncate">{reg.customer_id}</TableCell>
                        <TableCell className="p-2">
                          <div className="space-y-1">
@@ -410,18 +428,25 @@ const RegistrationsTab = () => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <Badge className={getStatusBadgeColor(reg.status)}>
-                            {reg.status}
-                          </Badge>
-                          {reg.approved_by && (
-                            <div className="text-xs text-muted-foreground">
-                              by {reg.approved_by}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
+                       <TableCell>
+                         <div className="space-y-1">
+                           <div className="flex flex-col gap-1">
+                             <Badge className={getStatusBadgeColor(reg.status)}>
+                               {reg.status}
+                             </Badge>
+                             {isExpired && (
+                               <Badge className="bg-red-600 text-white text-xs">
+                                 EXPIRED
+                               </Badge>
+                             )}
+                           </div>
+                           {reg.approved_by && (
+                             <div className="text-xs text-muted-foreground">
+                               by {reg.approved_by}
+                             </div>
+                           )}
+                         </div>
+                       </TableCell>
                       <TableCell className="text-sm font-medium">₹{reg.fee}</TableCell>
                       <TableCell>
                         <div className="space-y-1 text-xs">
@@ -433,14 +458,26 @@ const RegistrationsTab = () => {
                               <span className="text-muted-foreground">App:</span> {format(new Date(reg.approved_date), 'dd/MM/yy')}
                             </div>
                           )}
-                          {reg.expiry_date && (
-                            <div className={Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) <= 30 ? 'text-orange-600' : 'text-muted-foreground'}>
-                              <span>Exp:</span> {format(new Date(reg.expiry_date), 'dd/MM/yy')}
-                              <div className="text-xs">
-                                ({Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}d)
-                              </div>
-                            </div>
-                          )}
+                           {reg.expiry_date && (
+                             <div className={
+                               isExpired 
+                                 ? 'text-red-700 font-medium' 
+                                 : daysRemaining <= 30 
+                                   ? 'text-orange-600' 
+                                   : 'text-muted-foreground'
+                             }>
+                               <span>Exp:</span> {format(new Date(reg.expiry_date), 'dd/MM/yy')}
+                               <div className="text-xs">
+                                 {isExpired ? (
+                                   <span className="text-red-700 font-medium">
+                                     (Expired {Math.abs(daysRemaining)}d ago)
+                                   </span>
+                                 ) : (
+                                   <span>({daysRemaining}d remaining)</span>
+                                 )}
+                               </div>
+                             </div>
+                           )}
                         </div>
                       </TableCell>
                       <TableCell>
