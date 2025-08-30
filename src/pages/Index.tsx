@@ -5,53 +5,40 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Users, FileCheck, Link as LinkIcon, Megaphone } from 'lucide-react';
-
 interface Announcement {
   id: string;
   title: string;
   content: string;
   created_at: string;
 }
-
 interface Utility {
   id: string;
   name: string;
   url: string;
   description: string;
 }
-
 const Index = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [utilities, setUtilities] = useState<Utility[]>([]);
-
   useEffect(() => {
     fetchAnnouncements();
     fetchUtilities();
   }, []);
-
   const fetchAnnouncements = async () => {
-    const { data } = await supabase
-      .from('announcements')
-      .select('*')
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(3);
-    
+    const {
+      data
+    } = await supabase.from('announcements').select('*').eq('is_active', true).order('created_at', {
+      ascending: false
+    }).limit(3);
     if (data) setAnnouncements(data);
   };
-
   const fetchUtilities = async () => {
-    const { data } = await supabase
-      .from('utilities')
-      .select('*')
-      .eq('is_active', true)
-      .limit(6);
-    
+    const {
+      data
+    } = await supabase.from('utilities').select('*').eq('is_active', true).limit(6);
     if (data) setUtilities(data);
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Navigation />
       
       {/* Hero Section */}
@@ -119,10 +106,7 @@ const Index = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center">
-              <p className="mb-4">
-                നിങ്ങൾക്ക് ഒരിക്കൽ ലഭിക്കുന്ന പ്രത്യേക ജോബ് കാർഡ് അവസരം. 
-                രജിസ്റ്റർ ചെയ്താൽ ഉടൻ തന്നെ ആനുകൂല്യം ലഭിക്കും.
-              </p>
+              <p className="mb-4">ഇ- ലൈഫ് മുന്നോട്ട് വയ്ക്കുന്ന എല്ലാ പദ്ധതികളുടെയും ഭാഗമാകാൻ ജോബ് കാർഡ് നിർബന്ധമാണ് </p>
               <span className="font-bold text-3xl block mb-4">₹300</span>
               <Button size="lg" className="w-full bg-black text-yellow-300 hover:bg-gray-900">
                 Get Job Card
@@ -137,8 +121,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Utility Links</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {utilities.map((utility) => (
-              <Card key={utility.id} className="hover:shadow-lg transition-shadow">
+            {utilities.map(utility => <Card key={utility.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <LinkIcon className="w-5 h-5 text-primary" />
@@ -153,8 +136,7 @@ const Index = () => {
                     </Button>
                   </a>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -164,8 +146,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Latest Announcements</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {announcements.map((announcement) => (
-              <Card key={announcement.id} className="hover:shadow-lg transition-shadow">
+            {announcements.map(announcement => <Card key={announcement.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <Megaphone className="w-5 h-5 text-primary" />
@@ -178,8 +159,7 @@ const Index = () => {
                     {new Date(announcement.created_at).toLocaleDateString()}
                   </p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -208,8 +188,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
