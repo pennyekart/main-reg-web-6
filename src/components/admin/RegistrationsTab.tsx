@@ -214,13 +214,13 @@ const RegistrationsTab = () => {
     }
   };
 
-  const isRegistrationExpired = (expiryDate: string | null): boolean => {
-    if (!expiryDate) return false;
+  const isRegistrationExpired = (expiryDate: string | null, status: string): boolean => {
+    if (!expiryDate || status !== 'pending') return false;
     return new Date(expiryDate) < new Date();
   };
 
-  const getDaysRemaining = (expiryDate: string | null): number => {
-    if (!expiryDate) return Infinity;
+  const getDaysRemaining = (expiryDate: string | null, status: string): number => {
+    if (!expiryDate || status !== 'pending') return Infinity;
     return Math.ceil((new Date(expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
   };
 
@@ -251,8 +251,8 @@ const RegistrationsTab = () => {
       const csvData = [
         headers.join(','),
         ...filteredRegistrations.map(reg => {
-          const daysRemaining = getDaysRemaining(reg.expiry_date);
-          const isExpired = isRegistrationExpired(reg.expiry_date);
+          const daysRemaining = getDaysRemaining(reg.expiry_date, reg.status);
+          const isExpired = isRegistrationExpired(reg.expiry_date, reg.status);
           
           return [
             reg.customer_id,
@@ -270,7 +270,7 @@ const RegistrationsTab = () => {
             reg.approved_date ? format(new Date(reg.approved_date), 'dd/MM/yyyy') : '',
             reg.approved_by || '',
             reg.expiry_date ? format(new Date(reg.expiry_date), 'dd/MM/yyyy') : '',
-            isExpired ? `Expired ${Math.abs(daysRemaining)} days ago` : `${daysRemaining} days remaining`,
+            isExpired ? `Expired ${Math.abs(daysRemaining)} days ago` : reg.status === 'pending' ? `${daysRemaining} days remaining` : 'N/A',
             isExpired ? 'Yes' : 'No'
           ].join(',');
         })
@@ -296,10 +296,10 @@ const RegistrationsTab = () => {
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
-      const expiredCount = filteredRegistrations.filter(reg => isRegistrationExpired(reg.expiry_date)).length;
+      const expiredCount = filteredRegistrations.filter(reg => isRegistrationExpired(reg.expiry_date, reg.status)).length;
       const expiringCount = filteredRegistrations.filter(reg => {
-        const days = getDaysRemaining(reg.expiry_date);
-        return days <= 30 && days > 0;
+        const days = getDaysRemaining(reg.expiry_date, reg.status);
+        return days <= 30 && days > 0 && reg.status === 'pending';
       }).length;
       
       // Create comprehensive HTML content for PDF
@@ -409,7 +409,7 @@ const RegistrationsTab = () => {
               </div>
               <div class="summary-item expired">
                 <div style="font-size: 18px; font-weight: bold; color: #dc3545;">${expiredCount}</div>
-                <div>Expired</div>
+                <div>Expired (Pending Only)</div>
               </div>
               <div class="summary-item expiring">
                 <div style="font-size: 18px; font-weight: bold; color: #fd7e14;">${expiringCount}</div>
@@ -425,9 +425,9 @@ const RegistrationsTab = () => {
             </p>
             
             ${filteredRegistrations.map(reg => {
-              const isExpired = isRegistrationExpired(reg.expiry_date);
-              const daysRemaining = getDaysRemaining(reg.expiry_date);
-              const isExpiring = daysRemaining <= 30 && daysRemaining > 0;
+              const isExpired = isRegistrationExpired(reg.expiry_date, reg.status);
+              const daysRemaining = getDaysRemaining(reg.expiry_date, reg.status);
+              const isExpiring = daysRemaining <= 30 && daysRemaining > 0 && reg.status === 'pending';
               const className = isExpired ? 'expired' : isExpiring ? 'expiring' : '';
               
               return `
@@ -477,10 +477,11 @@ const RegistrationsTab = () => {
                     ${reg.expiry_date ? `
                     <div class="info-item">
                       <span class="info-label">Expiry:</span> ${format(new Date(reg.expiry_date), 'dd/MM/yyyy')}
-                      ${isExpired ? 
-                        `<span style="color: #dc3545; font-weight: bold;"> (Expired ${Math.abs(daysRemaining)} days ago)</span>` : 
-                        `<span style="color: ${daysRemaining <= 30 ? '#fd7e14' : '#666'}"> (${daysRemaining} days remaining)</span>`
-                      }
+                      ${reg.status === 'pending' ? (
+                        isExpired ? 
+                          `<span style="color: #dc3545; font-weight: bold;"> (Expired ${Math.abs(daysRemaining)} days ago)</span>` : 
+                          `<span style="color: ${daysRemaining <= 30 ? '#fd7e14' : '#666'}"> (${daysRemaining} days remaining)</span>`
+                      ) : '<span style="color: #666;"> (N/A for approved)</span>'}
                     </div>
                     ` : ''}
                   </div>
@@ -572,7 +573,7 @@ const RegistrationsTab = () => {
     const matchesPanchayath = panchayathFilter === 'all' || reg.panchayaths?.name === panchayathFilter;
     
     const matchesExpiry = expiryFilter === '' || (() => {
-      const daysLeft = Math.ceil((new Date(reg.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      const daysLeft = getDaysRemaining(reg.expiry_date, reg.status);
       return daysLeft <= parseInt(expiryFilter) && daysLeft >= 0;
     })();
 
@@ -684,10 +685,10 @@ const RegistrationsTab = () => {
               <TableBody>
                 {filteredRegistrations.map((reg) => {
                   const categoryColor = getCategoryColor(reg.categories?.name_english || '');
-                  const isExpired = isRegistrationExpired(reg.expiry_date);
-                  const daysRemaining = getDaysRemaining(reg.expiry_date);
+                  const isExpired = isRegistrationExpired(reg.expiry_date, reg.status);
+                  const daysRemaining = getDaysRemaining(reg.expiry_date, reg.status);
                   
-                  // Override styling for expired registrations
+                  // Override styling for expired registrations (only for pending status)
                   const rowClassName = isExpired 
                     ? 'bg-red-50 border-l-4 border-red-500 hover:bg-red-100 transition-colors'
                     : `${categoryColor.bg} ${categoryColor.border} hover:opacity-80 transition-opacity`;
@@ -759,20 +760,24 @@ const RegistrationsTab = () => {
                           )}
                            {reg.expiry_date && (
                              <div className={
-                               isExpired 
+                               reg.status === 'pending' && isExpired 
                                  ? 'text-red-700 font-medium' 
-                                 : daysRemaining <= 30 
+                                 : reg.status === 'pending' && daysRemaining <= 30 
                                    ? 'text-orange-600' 
                                    : 'text-muted-foreground'
                              }>
                                <span>Exp:</span> {format(new Date(reg.expiry_date), 'dd/MM/yy')}
                                <div className="text-xs">
-                                 {isExpired ? (
-                                   <span className="text-red-700 font-medium">
-                                     (Expired {Math.abs(daysRemaining)}d ago)
-                                   </span>
+                                 {reg.status === 'pending' ? (
+                                   isExpired ? (
+                                     <span className="text-red-700 font-medium">
+                                       (Expired {Math.abs(daysRemaining)}d ago)
+                                     </span>
+                                   ) : (
+                                     <span>({daysRemaining}d remaining)</span>
+                                   )
                                  ) : (
-                                   <span>({daysRemaining}d remaining)</span>
+                                   <span className="text-muted-foreground">(N/A)</span>
                                  )}
                                </div>
                              </div>
