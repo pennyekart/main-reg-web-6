@@ -54,6 +54,7 @@ const RegistrationsTab = () => {
   const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [expiryFilter, setExpiryFilter] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     fetchRegistrations();
@@ -223,6 +224,290 @@ const RegistrationsTab = () => {
     return Math.ceil((new Date(expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
   };
 
+  const handleExportExcel = async () => {
+    setIsExporting(true);
+    try {
+      // Create CSV data for Excel
+      const headers = [
+        'Customer ID',
+        'Full Name', 
+        'Mobile Number',
+        'Address',
+        'Ward',
+        'Agent',
+        'Category',
+        'Preference Category',
+        'Panchayath',
+        'Status',
+        'Fee (₹)',
+        'Registration Date',
+        'Approval Date',
+        'Approved By',
+        'Expiry Date',
+        'Days Remaining/Expired',
+        'Is Expired'
+      ];
+      
+      const csvData = [
+        headers.join(','),
+        ...filteredRegistrations.map(reg => {
+          const daysRemaining = getDaysRemaining(reg.expiry_date);
+          const isExpired = isRegistrationExpired(reg.expiry_date);
+          
+          return [
+            reg.customer_id,
+            `"${reg.full_name}"`,
+            reg.mobile_number,
+            `"${reg.address}"`,
+            reg.ward,
+            reg.agent,
+            `"${reg.categories?.name_english || ''}"`,
+            `"${reg.preference_categories?.name_english || ''}"`,
+            `"${reg.panchayaths?.name || ''}"`,
+            reg.status,
+            reg.fee,
+            format(new Date(reg.created_at), 'dd/MM/yyyy'),
+            reg.approved_date ? format(new Date(reg.approved_date), 'dd/MM/yyyy') : '',
+            reg.approved_by || '',
+            reg.expiry_date ? format(new Date(reg.expiry_date), 'dd/MM/yyyy') : '',
+            isExpired ? `Expired ${Math.abs(daysRemaining)} days ago` : `${daysRemaining} days remaining`,
+            isExpired ? 'Yes' : 'No'
+          ].join(',');
+        })
+      ].join('\n');
+
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `registrations-export-${format(new Date(), 'yyyy-MM-dd-HHmm')}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Excel file exported successfully');
+    } catch (error) {
+      toast.error('Error exporting to Excel');
+      console.error('Export error:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      const expiredCount = filteredRegistrations.filter(reg => isRegistrationExpired(reg.expiry_date)).length;
+      const expiringCount = filteredRegistrations.filter(reg => {
+        const days = getDaysRemaining(reg.expiry_date);
+        return days <= 30 && days > 0;
+      }).length;
+      
+      // Create comprehensive HTML content for PDF
+      const htmlContent = `
+        <html>
+          <head>
+            <title>Registrations Report</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 20px; 
+                font-size: 12px;
+                line-height: 1.4;
+              }
+              h1 { 
+                color: #333; 
+                border-bottom: 2px solid #007bff; 
+                padding-bottom: 10px; 
+                margin-bottom: 20px;
+                font-size: 24px;
+              }
+              .summary {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 10px;
+              }
+              .summary-item {
+                text-align: center;
+                padding: 10px;
+                background: white;
+                border-radius: 4px;
+                border-left: 4px solid #007bff;
+              }
+              .summary-item.expired { border-left-color: #dc3545; }
+              .summary-item.expiring { border-left-color: #fd7e14; }
+              .registration { 
+                border: 1px solid #ddd; 
+                margin: 10px 0; 
+                padding: 15px; 
+                border-radius: 5px; 
+                page-break-inside: avoid;
+                background: white;
+              }
+              .registration.expired {
+                background: #fff5f5;
+                border-left: 4px solid #dc3545;
+              }
+              .registration.expiring {
+                background: #fff8f0;
+                border-left: 4px solid #fd7e14;
+              }
+              .header { 
+                font-weight: bold; 
+                color: #007bff; 
+                font-size: 14px;
+                margin-bottom: 8px;
+              }
+              .info-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 8px;
+                margin-top: 10px;
+              }
+              .info-item {
+                font-size: 11px;
+              }
+              .info-label {
+                font-weight: bold;
+                color: #666;
+              }
+              .status-badge {
+                display: inline-block;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 10px;
+                font-weight: bold;
+                margin-right: 5px;
+              }
+              .status-pending { background: #fff3cd; color: #856404; }
+              .status-approved { background: #d1edff; color: #0c5460; }
+              .status-rejected { background: #f8d7da; color: #721c24; }
+              .expired-badge { 
+                background: #dc3545; 
+                color: white; 
+                padding: 2px 6px; 
+                border-radius: 3px; 
+                font-size: 10px;
+                font-weight: bold;
+              }
+              @media print {
+                body { margin: 0; }
+                .registration { page-break-inside: avoid; }
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Registrations Report</h1>
+            
+            <div class="summary">
+              <div class="summary-item">
+                <div style="font-size: 18px; font-weight: bold; color: #007bff;">${filteredRegistrations.length}</div>
+                <div>Total Registrations</div>
+              </div>
+              <div class="summary-item expired">
+                <div style="font-size: 18px; font-weight: bold; color: #dc3545;">${expiredCount}</div>
+                <div>Expired</div>
+              </div>
+              <div class="summary-item expiring">
+                <div style="font-size: 18px; font-weight: bold; color: #fd7e14;">${expiringCount}</div>
+                <div>Expiring Soon (≤30 days)</div>
+              </div>
+            </div>
+            
+            <p><strong>Generated on:</strong> ${format(new Date(), 'dd/MM/yyyy HH:mm')}</p>
+            <p><strong>Filters Applied:</strong> 
+              Status: ${statusFilter === 'all' ? 'All' : statusFilter}, 
+              Category: ${categoryFilter === 'all' ? 'All' : categoryFilter},
+              Panchayath: ${panchayathFilter === 'all' ? 'All' : panchayathFilter}
+            </p>
+            
+            ${filteredRegistrations.map(reg => {
+              const isExpired = isRegistrationExpired(reg.expiry_date);
+              const daysRemaining = getDaysRemaining(reg.expiry_date);
+              const isExpiring = daysRemaining <= 30 && daysRemaining > 0;
+              const className = isExpired ? 'expired' : isExpiring ? 'expiring' : '';
+              
+              return `
+                <div class="registration ${className}">
+                  <div class="header">${reg.full_name}</div>
+                  
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Customer ID:</span> ${reg.customer_id}
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Mobile:</span> ${reg.mobile_number}
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Category:</span> ${reg.categories?.name_english || ''}
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Status:</span> 
+                      <span class="status-badge status-${reg.status}">${reg.status.toUpperCase()}</span>
+                      ${isExpired ? '<span class="expired-badge">EXPIRED</span>' : ''}
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Fee:</span> ₹${reg.fee}
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Agent:</span> ${reg.agent}
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Address:</span> ${reg.address}
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Ward:</span> ${reg.ward}
+                    </div>
+                    ${reg.panchayaths ? `
+                    <div class="info-item">
+                      <span class="info-label">Panchayath:</span> ${reg.panchayaths.name}
+                    </div>
+                    ` : ''}
+                    <div class="info-item">
+                      <span class="info-label">Registered:</span> ${format(new Date(reg.created_at), 'dd/MM/yyyy')}
+                    </div>
+                    ${reg.approved_date ? `
+                    <div class="info-item">
+                      <span class="info-label">Approved:</span> ${format(new Date(reg.approved_date), 'dd/MM/yyyy')} by ${reg.approved_by}
+                    </div>
+                    ` : ''}
+                    ${reg.expiry_date ? `
+                    <div class="info-item">
+                      <span class="info-label">Expiry:</span> ${format(new Date(reg.expiry_date), 'dd/MM/yyyy')}
+                      ${isExpired ? 
+                        `<span style="color: #dc3545; font-weight: bold;"> (Expired ${Math.abs(daysRemaining)} days ago)</span>` : 
+                        `<span style="color: ${daysRemaining <= 30 ? '#fd7e14' : '#666'}"> (${daysRemaining} days remaining)</span>`
+                      }
+                    </div>
+                    ` : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.print();
+        toast.success('PDF export opened in new window');
+      } else {
+        toast.error('Please allow popups to export PDF');
+      }
+    } catch (error) {
+      toast.error('Error exporting to PDF');
+      console.error('PDF export error:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const getCategoryColor = (categoryName: string) => {
     const isJobCard = categoryName.toLowerCase().includes('job card');
     if (isJobCard) {
@@ -358,10 +643,24 @@ const RegistrationsTab = () => {
             min="0"
           />
 
-          <Button variant="outline">
-            <FileDown className="w-4 h-4 mr-2" />
-            Export Excel
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleExportExcel}
+              disabled={isExporting || filteredRegistrations.length === 0}
+            >
+              <FileDown className="w-4 h-4 mr-2" />
+              {isExporting ? 'Exporting...' : 'Export Excel'}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleExportPDF}
+              disabled={isExporting || filteredRegistrations.length === 0}
+            >
+              <FileDown className="w-4 h-4 mr-2" />
+              {isExporting ? 'Exporting...' : 'Export PDF'}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       
