@@ -90,9 +90,7 @@ const Index = () => {
                     <FileCheck className="w-10 h-10 text-white" />
                   </div>
                   <CardTitle className="text-3xl bg-gradient-to-r from-vibrant-orange to-vibrant-pink bg-clip-text text-transparent">രജിസ്‌ട്രേഷൻ സ്റ്റാറ്റസ് ചെക്ക് ചെയ്യുക </CardTitle>
-                  <CardDescription className="text-lg text-gray-700">
-                    Track your application status and get updates on your registration
-                  </CardDescription>
+                  <CardDescription className="text-lg text-gray-700">താങ്കളുടെ മൊബൈൽ നമ്പർ ഉപയോഗിച്ച താങ്കളുടെ രജിസ്‌ട്രേഷൻ സ്ഥിതി ഗതി അറിയുക </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
                   <Button size="lg" variant="outline" className="w-full border-2 border-vibrant-orange text-vibrant-orange hover:bg-gradient-to-r hover:from-vibrant-orange hover:to-vibrant-pink hover:text-white hover:border-transparent shadow-lg">
