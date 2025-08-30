@@ -360,16 +360,16 @@ const RegistrationsTab = () => {
           <div className="text-center py-8">Loading...</div>
         ) : (
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="w-full table-fixed">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-20">ID</TableHead>
-                  <TableHead className="w-28">Name & Contact</TableHead>
-                  <TableHead className="w-36">Category</TableHead>
-                  <TableHead className="w-20">Status</TableHead>
-                  <TableHead className="w-16">Fee</TableHead>
-                  <TableHead className="w-24">Dates</TableHead>
-                  <TableHead className="w-24">Actions</TableHead>
+                  <TableHead className="w-[12%]">Customer ID</TableHead>
+                  <TableHead className="w-[20%]">Contact Info</TableHead>
+                  <TableHead className="w-[18%]">Category</TableHead>
+                  <TableHead className="w-[10%]">Status</TableHead>
+                  <TableHead className="w-[8%]">Fee</TableHead>
+                  <TableHead className="w-[16%]">Important Dates</TableHead>
+                  <TableHead className="w-[16%]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -377,21 +377,21 @@ const RegistrationsTab = () => {
                   const categoryColor = getCategoryColor(reg.categories?.name_english || '');
                   return (
                     <TableRow key={reg.id} className={`${categoryColor.bg} ${categoryColor.border} hover:opacity-80 transition-opacity`}>
-                      <TableCell className="font-medium font-mono text-xs">{reg.customer_id}</TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-medium text-sm">{reg.full_name}</div>
-                          <div className="text-xs text-muted-foreground">{reg.mobile_number}</div>
-                          <div className="text-xs text-muted-foreground truncate max-w-32" title={reg.address}>
-                            {reg.address}
-                          </div>
-                          {reg.panchayaths && (
-                            <div className="text-xs text-muted-foreground">
-                              {reg.panchayaths.name}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
+                       <TableCell className="font-medium font-mono text-xs truncate">{reg.customer_id}</TableCell>
+                       <TableCell className="p-2">
+                         <div className="space-y-1">
+                           <div className="font-medium text-sm truncate">{reg.full_name}</div>
+                           <div className="text-xs text-muted-foreground">{reg.mobile_number}</div>
+                           <div className="text-xs text-muted-foreground truncate" title={reg.address}>
+                             {reg.address}
+                           </div>
+                           {reg.panchayaths && (
+                             <div className="text-xs text-muted-foreground truncate">
+                               {reg.panchayaths.name}
+                             </div>
+                           )}
+                         </div>
+                       </TableCell>
                       <TableCell>
                         <div className="space-y-2">
                           <div className="text-sm">
