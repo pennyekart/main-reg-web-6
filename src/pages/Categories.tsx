@@ -69,34 +69,34 @@ const Categories = () => {
                 key={category.id} 
                 className={`border-2 ${
                   isJobCard 
-                    ? 'golden-glitter golden-hover text-white border-gold shadow-lg' 
+                    ? 'golden-card text-black border-gold shadow-lg' 
                     : `glass-card category-hover ${colorClass}`
                 }`}
               >
                 <CardHeader>
                   <CardTitle className="text-lg">
-                    <div className={isJobCard ? 'font-bold text-white drop-shadow-md' : ''}>{category.name_english}</div>
-                    <div className={`text-base font-normal mt-1 ${isJobCard ? 'text-white/90 drop-shadow-sm' : 'opacity-80'}`}>
+                    <div className={isJobCard ? 'font-bold text-black' : ''}>{category.name_english}</div>
+                    <div className={`text-base font-normal mt-1 ${isJobCard ? 'text-black/80' : 'opacity-80'}`}>
                       {category.name_malayalam}
                     </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {category.description && (
-                    <p className={`mb-4 ${isJobCard ? 'text-white/95 drop-shadow-sm' : 'opacity-90'}`}>{category.description}</p>
+                    <p className={`mb-4 ${isJobCard ? 'text-black/90' : 'opacity-90'}`}>{category.description}</p>
                   )}
                   
                   {(category.actual_fee > 0 || category.offer_fee > 0) && (
                     <div className="mb-4">
                       {category.actual_fee > 0 && category.offer_fee > 0 && category.offer_fee < category.actual_fee ? (
                         <div className="flex items-center gap-2">
-                          <span className={`text-lg font-bold ${isJobCard ? 'text-white drop-shadow-md' : 'text-green-600'}`}>₹{category.offer_fee}</span>
-                          <span className={`text-sm line-through ${isJobCard ? 'text-white/70 drop-shadow-sm' : 'opacity-60'}`}>₹{category.actual_fee}</span>
+                          <span className={`text-lg font-bold ${isJobCard ? 'text-black' : 'text-green-600'}`}>₹{category.offer_fee}</span>
+                          <span className={`text-sm line-through ${isJobCard ? 'text-black/60' : 'opacity-60'}`}>₹{category.actual_fee}</span>
                         </div>
                       ) : category.actual_fee > 0 ? (
-                        <span className={`text-lg font-bold ${isJobCard ? 'text-white drop-shadow-md' : ''}`}>₹{category.actual_fee}</span>
+                        <span className={`text-lg font-bold ${isJobCard ? 'text-black' : ''}`}>₹{category.actual_fee}</span>
                       ) : (
-                        <span className={`text-lg font-bold ${isJobCard ? 'text-white drop-shadow-md' : 'text-green-600'}`}>Free</span>
+                        <span className={`text-lg font-bold ${isJobCard ? 'text-black' : 'text-green-600'}`}>Free</span>
                       )}
                     </div>
                   )}
@@ -105,7 +105,7 @@ const Categories = () => {
                     onClick={() => handleRegisterClick(category)}
                     className={`w-full transition-all duration-300 ${
                       isJobCard 
-                        ? 'bg-white/20 hover:bg-white/30 text-white font-bold border-white/40 shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm' 
+                        ? 'bg-black/80 hover:bg-black text-yellow-300 hover:text-yellow-200 border-black/50 shadow-lg hover:shadow-xl transform hover:scale-105 font-bold' 
                         : 'hover:transform hover:scale-105'
                     }`}
                     size="lg"
