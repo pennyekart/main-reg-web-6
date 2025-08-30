@@ -78,6 +78,13 @@ export default {
 					'pink-foreground': 'hsl(var(--category-pink-foreground))',
 					indigo: 'hsl(var(--category-indigo))',
 					'indigo-foreground': 'hsl(var(--category-indigo-foreground))'
+				},
+				vibrant: {
+					blue: 'hsl(var(--vibrant-blue))',
+					green: 'hsl(var(--vibrant-green))',
+					orange: 'hsl(var(--vibrant-orange))',
+					pink: 'hsl(var(--vibrant-pink))',
+					purple: 'hsl(var(--vibrant-purple))'
 				}
 			},
 			borderRadius: {
