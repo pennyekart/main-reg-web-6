@@ -65,38 +65,38 @@ const Categories = () => {
             const colorClass = colorClasses[index % colorClasses.length];
             
             return (
-              <Card 
+                <Card 
                 key={category.id} 
                 className={`border-2 ${
                   isJobCard 
-                    ? 'golden-glitter golden-hover text-gold-dark border-gold shadow-lg' 
+                    ? 'golden-glitter golden-hover text-white border-gold shadow-lg' 
                     : `glass-card category-hover ${colorClass}`
                 }`}
               >
                 <CardHeader>
                   <CardTitle className="text-lg">
-                    <div className={isJobCard ? 'font-bold text-gold-dark' : ''}>{category.name_english}</div>
-                    <div className={`text-base font-normal mt-1 ${isJobCard ? 'text-gold-dark/80' : 'opacity-80'}`}>
+                    <div className={isJobCard ? 'font-bold text-white drop-shadow-md' : ''}>{category.name_english}</div>
+                    <div className={`text-base font-normal mt-1 ${isJobCard ? 'text-white/90 drop-shadow-sm' : 'opacity-80'}`}>
                       {category.name_malayalam}
                     </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {category.description && (
-                    <p className={`mb-4 ${isJobCard ? 'text-gold-dark/90' : 'opacity-90'}`}>{category.description}</p>
+                    <p className={`mb-4 ${isJobCard ? 'text-white/95 drop-shadow-sm' : 'opacity-90'}`}>{category.description}</p>
                   )}
                   
                   {(category.actual_fee > 0 || category.offer_fee > 0) && (
                     <div className="mb-4">
                       {category.actual_fee > 0 && category.offer_fee > 0 && category.offer_fee < category.actual_fee ? (
                         <div className="flex items-center gap-2">
-                          <span className={`text-lg font-bold ${isJobCard ? 'text-gold-dark' : 'text-green-600'}`}>₹{category.offer_fee}</span>
-                          <span className={`text-sm line-through ${isJobCard ? 'text-gold-dark/60' : 'opacity-60'}`}>₹{category.actual_fee}</span>
+                          <span className={`text-lg font-bold ${isJobCard ? 'text-white drop-shadow-md' : 'text-green-600'}`}>₹{category.offer_fee}</span>
+                          <span className={`text-sm line-through ${isJobCard ? 'text-white/70 drop-shadow-sm' : 'opacity-60'}`}>₹{category.actual_fee}</span>
                         </div>
                       ) : category.actual_fee > 0 ? (
-                        <span className={`text-lg font-bold ${isJobCard ? 'text-gold-dark' : ''}`}>₹{category.actual_fee}</span>
+                        <span className={`text-lg font-bold ${isJobCard ? 'text-white drop-shadow-md' : ''}`}>₹{category.actual_fee}</span>
                       ) : (
-                        <span className={`text-lg font-bold ${isJobCard ? 'text-gold-dark' : 'text-green-600'}`}>Free</span>
+                        <span className={`text-lg font-bold ${isJobCard ? 'text-white drop-shadow-md' : 'text-green-600'}`}>Free</span>
                       )}
                     </div>
                   )}
@@ -105,7 +105,7 @@ const Categories = () => {
                     onClick={() => handleRegisterClick(category)}
                     className={`w-full transition-all duration-300 ${
                       isJobCard 
-                        ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-yellow-900 hover:text-yellow-100 border-yellow-500 shadow-lg hover:shadow-xl transform hover:scale-105' 
+                        ? 'bg-white/20 hover:bg-white/30 text-white font-bold border-white/40 shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm' 
                         : 'hover:transform hover:scale-105'
                     }`}
                     size="lg"
