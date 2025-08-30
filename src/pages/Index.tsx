@@ -109,6 +109,29 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Job Card Special */}
+      <section className="py-16 bg-muted">
+        <div className="container mx-auto px-4 max-w-md">
+          <Card className="bg-gradient-to-r from-yellow-300 to-yellow-500 text-black shadow-xl rounded-2xl">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-center">
+                Job Card (Special)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="mb-4">
+                നിങ്ങൾക്ക് ഒരിക്കൽ ലഭിക്കുന്ന പ്രത്യേക ജോബ് കാർഡ് അവസരം. 
+                രജിസ്റ്റർ ചെയ്താൽ ഉടൻ തന്നെ ആനുകൂല്യം ലഭിക്കും.
+              </p>
+              <span className="font-bold text-3xl block mb-4">₹300</span>
+              <Button size="lg" className="w-full bg-black text-yellow-300 hover:bg-gray-900">
+                Get Job Card
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Utilities Section */}
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">
