@@ -1,9 +1,10 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AdminAuthContextType {
   isAdminLoggedIn: boolean;
   currentAdminName: string | null;
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -22,15 +23,32 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = (username: string, password: string): boolean => {
-    if (username === 'eva' && password === '123') {
-      setIsAdminLoggedIn(true);
-      setCurrentAdminName(username);
-      localStorage.setItem('adminAuth', 'true');
-      localStorage.setItem('adminName', username);
-      return true;
+  const login = async (username: string, password: string): Promise<boolean> => {
+    try {
+      const { data: adminUser, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('username', username)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !adminUser) {
+        return false;
+      }
+
+      // For now, using simple password comparison - in production, use bcrypt
+      if (adminUser.password_hash === password) {
+        setIsAdminLoggedIn(true);
+        setCurrentAdminName(username);
+        localStorage.setItem('adminAuth', 'true');
+        localStorage.setItem('adminName', username);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
