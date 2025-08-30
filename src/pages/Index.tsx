@@ -89,7 +89,7 @@ const Index = () => {
                   <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-vibrant-orange to-vibrant-pink rounded-full flex items-center justify-center shadow-lg">
                     <FileCheck className="w-10 h-10 text-white" />
                   </div>
-                  <CardTitle className="text-3xl bg-gradient-to-r from-vibrant-orange to-vibrant-pink bg-clip-text text-transparent">Check Registration Status</CardTitle>
+                  <CardTitle className="text-3xl bg-gradient-to-r from-vibrant-orange to-vibrant-pink bg-clip-text text-transparent">രജിസ്‌ട്രേഷൻ സ്റ്റാറ്റസ് ചെക്ക് ചെയ്യുക </CardTitle>
                   <CardDescription className="text-lg text-gray-700">
                     Track your application status and get updates on your registration
                   </CardDescription>
