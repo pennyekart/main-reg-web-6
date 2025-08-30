@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useAdminPermissions } from '@/hooks/useAdminPermissions';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Navigation from '@/components/Navigation';
@@ -17,6 +18,7 @@ import NotificationBell from '@/components/admin/NotificationBell';
 
 const AdminPanel = () => {
   const { isAdminLoggedIn, logout } = useAdminAuth();
+  const { hasPermission, hasAnyPermission, isSuper, loading } = useAdminPermissions();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,9 +32,42 @@ const AdminPanel = () => {
     navigate('/admin/login');
   };
 
-  if (!isAdminLoggedIn) {
+  if (!isAdminLoggedIn || loading) {
     return null;
   }
+
+  // Define tab permissions mapping
+  const tabPermissions = {
+    registrations: ['users_read', 'users_write', 'manage_registrations'],
+    categories: ['categories_read', 'categories_write', 'manage_categories'],
+    panchayaths: ['panchayaths_read', 'panchayaths_write'],
+    announcements: ['announcements_read', 'announcements_write'],
+    utilities: ['utilities_read', 'utilities_write', 'manage_utilities'],
+    accounts: ['accounts_read', 'accounts_write'],
+    reports: ['reports_read', 'manage_reports'],
+    'admin-users': ['admin_users_read', 'admin_users_write', 'manage_users'],
+    permissions: [] // Only super admin can see this
+  };
+
+  // Filter tabs based on permissions
+  const availableTabs = [
+    { id: 'registrations', label: 'Registrations', component: <RegistrationsTab /> },
+    { id: 'categories', label: 'Categories', component: <CategoriesTab /> },
+    { id: 'panchayaths', label: 'Panchayaths', component: <PanchayathsTab /> },
+    { id: 'announcements', label: 'Announcements', component: <AnnouncementsTab /> },
+    { id: 'utilities', label: 'Utilities', component: <UtilitiesTab /> },
+    { id: 'accounts', label: 'Accounts', component: <AccountsTab /> },
+    { id: 'reports', label: 'Reports', component: <ReportsTab /> },
+    { id: 'admin-users', label: 'Admin Users', component: <AdminUsersTab /> },
+    { id: 'permissions', label: 'Permissions', component: <PermissionManagerTab /> }
+  ].filter(tab => {
+    if (isSuper) return true; // Super admin sees everything
+    if (tab.id === 'permissions') return false; // Only super admin can manage permissions
+    return hasAnyPermission(tabPermissions[tab.id as keyof typeof tabPermissions]);
+  });
+
+  // Get default tab (first available tab)
+  const defaultTab = availableTabs[0]?.id || 'registrations';
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,74 +83,33 @@ const AdminPanel = () => {
           </div>
         </div>
         
-        <Tabs defaultValue="registrations" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
           <div className="overflow-x-auto">
-            <TabsList className="flex w-max sm:grid sm:w-full sm:grid-cols-5 lg:grid-cols-9 h-auto p-1">
-              <TabsTrigger value="registrations" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                Registrations
-              </TabsTrigger>
-              <TabsTrigger value="categories" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                Categories
-              </TabsTrigger>
-              <TabsTrigger value="panchayaths" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                Panchayaths
-              </TabsTrigger>
-              <TabsTrigger value="announcements" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                Announcements
-              </TabsTrigger>
-              <TabsTrigger value="utilities" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                Utilities
-              </TabsTrigger>
-              <TabsTrigger value="accounts" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                Accounts
-              </TabsTrigger>
-              <TabsTrigger value="reports" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                Reports
-              </TabsTrigger>
-              <TabsTrigger value="admin-users" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                Admin Users
-              </TabsTrigger>
-              <TabsTrigger value="permissions" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-                Permissions
-              </TabsTrigger>
+            <TabsList className={`flex w-max sm:grid sm:w-full h-auto p-1`} 
+              style={{ gridTemplateColumns: `repeat(${availableTabs.length}, 1fr)` }}>
+              {availableTabs.map((tab) => (
+                <TabsTrigger 
+                  key={tab.id}
+                  value={tab.id} 
+                  className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3"
+                >
+                  {tab.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </div>
           
-          <TabsContent value="registrations">
-            <RegistrationsTab />
-          </TabsContent>
-          
-          <TabsContent value="categories">
-            <CategoriesTab />
-          </TabsContent>
-          
-          <TabsContent value="panchayaths">
-            <PanchayathsTab />
-          </TabsContent>
-          
-          <TabsContent value="announcements">
-            <AnnouncementsTab />
-          </TabsContent>
-          
-          <TabsContent value="utilities">
-            <UtilitiesTab />
-          </TabsContent>
-          
-          <TabsContent value="accounts">
-            <AccountsTab />
-          </TabsContent>
-          
-          <TabsContent value="reports">
-            <ReportsTab />
-          </TabsContent>
-          
-          <TabsContent value="admin-users">
-            <AdminUsersTab />
-          </TabsContent>
-          
-          <TabsContent value="permissions">
-            <PermissionManagerTab />
-          </TabsContent>
+          {availableTabs.map((tab) => (
+            <TabsContent key={tab.id} value={tab.id}>
+              {tab.component}
+            </TabsContent>
+          ))}
+
+          {availableTabs.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No permissions assigned. Contact Super Admin Eva.</p>
+            </div>
+          )}
         </Tabs>
       </div>
     </div>
