@@ -166,9 +166,7 @@ const CheckStatus = () => {
                   </div>}
 
                 {registration.status === 'approved' && <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                    <p className="text-green-800 font-semibold">
-                      Congratulations! Your registration has been approved.
-                    </p>
+                    <p className="text-green-800 font-semibold">താങ്കളുടെ രജിസ്‌ട്രേഷൻ പൂർത്തിയായി, താങ്കൾക്ക് അനുയോജ്യമായ തൊഴിലവസരം തിരഞ്ഞെടുക്കാൻ താങ്കളുടെ ഏജന്റിനെ ബന്ധപെടുക...</p>
                   </div>}
 
                 {registration.status === 'rejected' && <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
