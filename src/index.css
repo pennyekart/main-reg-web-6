@@ -257,3 +257,76 @@ All colors MUST be HSL.
     }
   }
 }
+/* Elegant Premium Golden Card */
+.golden-card {
+  position: relative;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  color: hsl(42, 90%, 15%);
+  font-weight: 500;
+  background: linear-gradient(135deg,
+    hsl(45, 100%, 55%),
+    hsl(42, 90%, 40%),
+    hsl(48, 100%, 75%));
+  background-size: 300% 300%;
+  animation: golden-shift 6s ease infinite;
+  border: 2px solid hsl(45, 95%, 50%);
+  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.35),
+              inset 0 2px 4px rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+}
+
+/* Soft moving shine */
+.golden-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: golden-shine 4s infinite;
+  pointer-events: none;
+}
+
+/* Animated glowing border */
+.golden-card::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+    hsl(45, 100%, 60%),
+    hsl(42, 90%, 35%),
+    hsl(48, 100%, 75%),
+    hsl(45, 100%, 60%));
+  background-size: 400% 400%;
+  animation: border-glow 8s linear infinite;
+  z-index: -1;
+}
+
+/* Animations */
+@keyframes golden-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes golden-shine {
+  0% { left: -75%; }
+  100% { left: 125%; }
+}
+
+@keyframes border-glow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
