@@ -69,7 +69,8 @@ const Index = () => {
                   <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-vibrant-green to-vibrant-blue rounded-full flex items-center justify-center shadow-lg">
                     <Users className="w-10 h-10 text-white" />
                   </div>
-                  <CardTitle className="text-3xl bg-gradient-to-r from-vibrant-green to-vibrant-blue bg-clip-text text-transparent">Register for Categories</CardTitle>
+                  <CardTitle className="text-3xl bg-gradient-to-r from-vibrant-green to-vibrant-blue bg-clip-text text-transparent">Register for Categories
+(രജിസ്റ്റർ ചെയ്യുക )</CardTitle>
                   <CardDescription className="text-lg text-gray-700">
                     Choose from various self-employment categories and start your registration process
                   </CardDescription>
@@ -131,16 +132,8 @@ const Index = () => {
           <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-vibrant-blue to-vibrant-green bg-clip-text text-transparent">Utility Links</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {utilities.map((utility, index) => {
-              const colors = [
-                'from-vibrant-blue/20 to-vibrant-purple/20 hover:from-vibrant-blue/30 hover:to-vibrant-purple/30',
-                'from-vibrant-green/20 to-vibrant-blue/20 hover:from-vibrant-green/30 hover:to-vibrant-blue/30',
-                'from-vibrant-orange/20 to-vibrant-pink/20 hover:from-vibrant-orange/30 hover:to-vibrant-pink/30',
-                'from-vibrant-pink/20 to-vibrant-purple/20 hover:from-vibrant-pink/30 hover:to-vibrant-purple/30',
-                'from-vibrant-purple/20 to-vibrant-blue/20 hover:from-vibrant-purple/30 hover:to-vibrant-blue/30',
-                'from-vibrant-green/20 to-vibrant-orange/20 hover:from-vibrant-green/30 hover:to-vibrant-orange/30'
-              ];
-              return (
-                <Card key={utility.id} className={`transition-all duration-300 hover:scale-105 hover:shadow-xl bg-gradient-to-br ${colors[index % colors.length]} border-2 border-white/50`}>
+            const colors = ['from-vibrant-blue/20 to-vibrant-purple/20 hover:from-vibrant-blue/30 hover:to-vibrant-purple/30', 'from-vibrant-green/20 to-vibrant-blue/20 hover:from-vibrant-green/30 hover:to-vibrant-blue/30', 'from-vibrant-orange/20 to-vibrant-pink/20 hover:from-vibrant-orange/30 hover:to-vibrant-pink/30', 'from-vibrant-pink/20 to-vibrant-purple/20 hover:from-vibrant-pink/30 hover:to-vibrant-purple/30', 'from-vibrant-purple/20 to-vibrant-blue/20 hover:from-vibrant-purple/30 hover:to-vibrant-blue/30', 'from-vibrant-green/20 to-vibrant-orange/20 hover:from-vibrant-green/30 hover:to-vibrant-orange/30'];
+            return <Card key={utility.id} className={`transition-all duration-300 hover:scale-105 hover:shadow-xl bg-gradient-to-br ${colors[index % colors.length]} border-2 border-white/50`}>
                   <CardHeader>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-vibrant-blue to-vibrant-purple rounded-lg flex items-center justify-center">
@@ -157,9 +150,8 @@ const Index = () => {
                       </Button>
                     </a>
                   </CardContent>
-                </Card>
-              );
-            })}
+                </Card>;
+          })}
           </div>
         </div>
       </section>
@@ -170,13 +162,8 @@ const Index = () => {
           <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-vibrant-pink to-vibrant-purple bg-clip-text text-transparent">Latest Announcements</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {announcements.map((announcement, index) => {
-              const colors = [
-                'from-vibrant-pink/20 to-vibrant-purple/20 hover:from-vibrant-pink/30 hover:to-vibrant-purple/30',
-                'from-vibrant-orange/20 to-vibrant-pink/20 hover:from-vibrant-orange/30 hover:to-vibrant-pink/30',
-                'from-vibrant-purple/20 to-vibrant-blue/20 hover:from-vibrant-purple/30 hover:to-vibrant-blue/30'
-              ];
-              return (
-                <Card key={announcement.id} className={`transition-all duration-300 hover:scale-105 hover:shadow-xl bg-gradient-to-br ${colors[index % colors.length]} border-2 border-white/50`}>
+            const colors = ['from-vibrant-pink/20 to-vibrant-purple/20 hover:from-vibrant-pink/30 hover:to-vibrant-purple/30', 'from-vibrant-orange/20 to-vibrant-pink/20 hover:from-vibrant-orange/30 hover:to-vibrant-pink/30', 'from-vibrant-purple/20 to-vibrant-blue/20 hover:from-vibrant-purple/30 hover:to-vibrant-blue/30'];
+            return <Card key={announcement.id} className={`transition-all duration-300 hover:scale-105 hover:shadow-xl bg-gradient-to-br ${colors[index % colors.length]} border-2 border-white/50`}>
                   <CardHeader>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-vibrant-pink to-vibrant-purple rounded-lg flex items-center justify-center">
@@ -191,9 +178,8 @@ const Index = () => {
                       {new Date(announcement.created_at).toLocaleDateString()}
                     </p>
                   </CardContent>
-                </Card>
-              );
-            })}
+                </Card>;
+          })}
           </div>
         </div>
       </section>
