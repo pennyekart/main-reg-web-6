@@ -7,6 +7,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('🔄 External DB function called with method:', req.method);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -24,6 +26,8 @@ serve(async (req) => {
     const externalSupabase = createClient(EXTERNAL_SUPABASE_URL, EXTERNAL_SUPABASE_ANON_KEY);
 
     const { action, panchayath_id } = await req.json().catch(() => ({ action: 'explore_schema' }));
+    
+    console.log('📋 Request body parsed:', { action, panchayath_id });
 
     let result;
 
@@ -86,6 +90,7 @@ serve(async (req) => {
         break;
 
       case 'fetch_wards':
+        console.log('🔍 Fetching wards for panchayath_id:', panchayath_id);
         if (!panchayath_id) throw new Error('panchayath_id is required');
         
         // Try multiple possible table names and column names
@@ -96,7 +101,9 @@ serve(async (req) => {
         const panchayathColumns = ['panchayath_id', 'panchayath', 'panchayath_uuid'];
         
         for (const tableName of wardTables) {
+          console.log(`🔍 Trying table: ${tableName}`);
           for (const columnName of panchayathColumns) {
+            console.log(`🔍 Trying column: ${columnName} with value: ${panchayath_id}`);
             try {
               const { data, error } = await externalSupabase
                 .from(tableName)
@@ -104,20 +111,28 @@ serve(async (req) => {
                 .eq(columnName, panchayath_id)
                 .order('name');
               
+              console.log(`📊 Query result for ${tableName}.${columnName}:`, { data, error, count: data?.length });
+              
               if (data && !error) {
                 wardData = data;
+                console.log('✅ Successfully found wards:', wardData);
                 break;
               }
               wardError = error;
             } catch (e) {
+              console.log(`❌ Error querying ${tableName}.${columnName}:`, e);
               wardError = e;
             }
           }
           if (wardData) break;
         }
         
-        if (!wardData && wardError) throw wardError;
+        if (!wardData && wardError) {
+          console.log('❌ Final ward error:', wardError);
+          throw wardError;
+        }
         result = { wards: wardData || [] };
+        console.log('🎯 Final ward result:', result);
         break;
 
       case 'fetch_agents':
