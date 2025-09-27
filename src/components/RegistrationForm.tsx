@@ -84,11 +84,17 @@ const RegistrationForm = ({
   const fetchWards = async (panchayathId: string) => {
     try {
       console.log('🔄 Fetching wards for panchayath:', panchayathId);
+      
+      // First test the external database connection
+      const schemaResult = await externalDbService.exploreSchema();
+      console.log('📊 External DB Schema:', schemaResult);
+      
       const wardData = await externalDbService.getWardsByPanchayath(panchayathId);
       console.log('✅ Wards fetched:', wardData);
       setWards(wardData);
     } catch (error) {
       console.error('❌ Error fetching wards:', error);
+      console.error('❌ Full error details:', JSON.stringify(error, null, 2));
       toast.error('Failed to load wards. Please try again.');
     }
   };

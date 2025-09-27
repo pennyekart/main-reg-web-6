@@ -22,11 +22,18 @@ export interface ExternalAgent {
 
 class ExternalDatabaseService {
   private async callExternalDB(action: string, params?: any) {
+    console.log('🔄 Calling external DB with action:', action, 'params:', params);
+    
     const { data, error } = await supabase.functions.invoke('explore-external-db', {
       body: { action, ...params }
     });
     
-    if (error) throw error;
+    console.log('📤 External DB response:', { data, error });
+    
+    if (error) {
+      console.error('❌ External DB error:', error);
+      throw error;
+    }
     return data;
   }
 
